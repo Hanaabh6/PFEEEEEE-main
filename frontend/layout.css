@@ -1,0 +1,156 @@
+/* Global layout system for IntelliBuild (responsive + no horizontal overflow)
+   Include this file AFTER theme.css / page css.
+*/
+
+:root{
+  --ib-sidebar-width: 280px;
+  --ib-sidebar-width-mobile: 288px;
+  --ib-topbar-height: 70px;
+  --ib-break-desktop: 1024px;
+  --ib-break-tablet: 768px;
+  --ib-break-mobile: 480px;
+}
+
+/* Hard reset for the whole app */
+html, body { height: 100%; }
+html { overflow-x: hidden; }
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Avoid scrollbars created by transforms/positioning */
+*{ box-sizing: border-box; }
+
+img, svg, video { max-width: 100%; height: auto; }
+
+/* Main shell: always sidebar + content */
+.ib-shell{
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  overflow: clip; /* prevents accidental overflow painting */
+}
+
+/* Sidebar wrapper: the actual sidebar is injected by sidebar-loader.js */
+.ib-sidebar-wrap{
+  width: var(--ib-sidebar-width);
+  flex: 0 0 var(--ib-sidebar-width);
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* The injected template uses classes .ib-sidebar / .sidebar / .glass-sidebar */
+.ib-sidebar-wrap .ib-sidebar,
+.ib-sidebar-wrap .sidebar,
+.ib-sidebar-wrap .glass-sidebar{
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100vh !important;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.ib-content{
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Desktop offset patterns (legacy pages sometimes use margin-left/width calc) */
+@media (min-width: 901px){
+  body.flex{ display:block !important; }
+}
+
+/* Mobile: sidebar becomes an overlay drawer */
+.ib-hamburger{
+  display: none;
+}
+
+@media (max-width: 900px){
+  .ib-shell{
+    display: block;
+    min-height: 100vh;
+  }
+
+  .ib-sidebar-wrap{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--ib-sidebar-width-mobile);
+    flex: 0 0 var(--ib-sidebar-width-mobile);
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(calc(-1 * var(--ib-sidebar-width-mobile)));
+    transition: transform 220ms ease;
+    background: transparent;
+    padding: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .ib-shell.is-sidebar-open .ib-sidebar-wrap{
+    transform: translateX(0);
+  }
+
+  /* overlay backdrop */
+  .ib-backdrop{
+    display: none;
+  }
+
+  .ib-shell.is-sidebar-open .ib-backdrop{
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(2,6,23,0.62);
+    backdrop-filter: blur(3px);
+  }
+
+  .ib-content{
+    padding-left: 0 !important;
+    min-width: 0;
+  }
+
+  .ib-hamburger{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(148,163,184,0.25);
+    background: rgba(255,255,255,0.7);
+    color: #0f172a;
+    cursor: pointer;
+    z-index: 1100;
+    position: sticky;
+    top: 12px;
+    margin: 8px 0 0 12px;
+  }
+
+  /* close button can be same element */
+  .ib-hamburger i{ font-size: 18px; }
+}
+
+/* Prevent width:100vw/100vh misuse in legacy CSS */
+/* Any container should use %/min-height instead. */
+:where(.legacy-100vw){ width: 100%; }
+
+/* Global fix: allow shrinking */
+.ib-content, .ib-content *{ min-width: 0; }
+
+/* Ensure tables/overlays don't create horizontal overflow */
+:where(table){ max-width: 100%; }
+
+/* For internal overflow areas, keep them scrollable locally */
+.overflow-x-auto{ overflow-x: auto; }
+
+/* Remove any accidental horizontal overflow from common utility wrappers */
+.overflow-x-hidden{ overflow-x: hidden !important; }
+
