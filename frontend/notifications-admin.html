@@ -510,7 +510,7 @@
     }
 
     async function fetchAdminHistory() {
-      const res = await fetch(`${API_BASE}/user/history`, { headers: authHeaders() });
+      const res = await fetch(`${API_BASE}/admin/history?limit=200`, { headers: authHeaders() });
       const data = await res.json().catch(() => []);
       const list = Array.isArray(data) ? data : [];
       return list.filter(function (entry) {

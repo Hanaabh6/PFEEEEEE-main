@@ -574,7 +574,7 @@
     async function logAction(action, detail, status) {
       try {
         const actionLabel = String(action || "").startsWith("Admin -") ? action : `Admin - ${action}`;
-        await fetch(`${apiBase}/user/history`, {
+        await fetch(`${apiBase}/admin/history`, {
           method: "POST",
           headers: authHeaders(),
           body: JSON.stringify({ action: actionLabel, detail: detail, status: status || "Succes" })
@@ -596,7 +596,7 @@
     }
 
     async function fetchAdminHistory() {
-      const response = await fetch(`${apiBase}/user/history`, { method: "GET", headers: authHeaders() });
+      const response = await fetch(`${apiBase}/admin/history?limit=200`, { method: "GET", headers: authHeaders() });
       const data = await response.json().catch(function () { return []; });
       const list = Array.isArray(data) ? data : [];
       return list.filter(isAdminHistoryEntry);

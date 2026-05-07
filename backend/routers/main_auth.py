@@ -2,11 +2,12 @@ from fastapi import APIRouter, Body, HTTPException, Request
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
 import httpx
+from typing import Any
 
 from ..base import user_history_collection, notifications_collection, things_collection
 from ..config import resolve_public_base_url
 
-from ..supabase_client import reset_password_email, signup_user, supabase, delete_user_admin
+from ..supabase_client import reset_password_email, signup_user, supabase, supabase_admin, delete_user_admin
 from ..notifications_service import create_notification
 
 
@@ -108,6 +109,192 @@ def _normalize_favorites(rows) -> list[dict]:
     return normalized
 
 
+def _profile_client():
+    return supabase_admin or supabase
+
+
+def _profile_table():
+    return _profile_client().table("utilisateur")
+
+
+def _admin_auth_api():
+    client = supabase_admin or supabase
+    return getattr(client.auth, "admin", None) or getattr(client.auth, "api", None)
+
+
+def _extract_response_rows(response: Any) -> list[dict]:
+    data = getattr(response, "data", None)
+    if isinstance(data, list):
+        return [row for row in data if isinstance(row, dict)]
+    if isinstance(data, dict):
+        return [data]
+    if isinstance(response, list):
+        return [row for row in response if isinstance(row, dict)]
+    if isinstance(response, dict):
+        return [response]
+    return []
+
+
+def _get_field_value(item: Any, field_name: str, default: Any = None) -> Any:
+    if isinstance(item, dict):
+        return item.get(field_name, default)
+    return getattr(item, field_name, default)
+
+
+def _extract_auth_items(payload: Any) -> list[Any]:
+    if isinstance(payload, list):
+        return payload
+
+    users_attr = getattr(payload, "users", None)
+    if isinstance(users_attr, list):
+        return users_attr
+
+    if isinstance(payload, dict):
+        payload_users = payload.get("users")
+        if isinstance(payload_users, list):
+            return payload_users
+
+    data = getattr(payload, "data", None)
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        data_users = data.get("users")
+        if isinstance(data_users, list):
+            return data_users
+
+    return []
+
+
+def _extract_metadata_name(metadata: dict[str, Any] | None) -> str:
+    metadata = metadata if isinstance(metadata, dict) else {}
+    for key in ("display_name", "full_name", "name", "nom"):
+        value = str(metadata.get(key, "") or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def _normalize_auth_user_payload(payload: Any) -> dict[str, Any]:
+    if payload is None:
+        return {}
+
+    user = getattr(payload, "user", None)
+    if user is not None:
+        return _normalize_auth_user_payload(user)
+
+    if isinstance(payload, dict) and payload.get("user") is not None:
+        return _normalize_auth_user_payload(payload.get("user"))
+
+    user_id = str(_get_field_value(payload, "id", "") or "").strip()
+    email = str(_get_field_value(payload, "email", "") or "").strip()
+    user_metadata = _get_field_value(payload, "user_metadata", {}) or {}
+    app_metadata = _get_field_value(payload, "app_metadata", {}) or {}
+    display_name = _extract_metadata_name(user_metadata)
+    role = str((app_metadata if isinstance(app_metadata, dict) else {}).get("role", "") or "").strip().lower()
+
+    return {
+        "id": user_id,
+        "email": email,
+        "display_name": display_name,
+        "role": role,
+        "created_at": str(_get_field_value(payload, "created_at", "") or ""),
+        "updated_at": str(_get_field_value(payload, "updated_at", "") or ""),
+        "last_sign_in_at": str(_get_field_value(payload, "last_sign_in_at", "") or ""),
+        "email_confirmed_at": str(_get_field_value(payload, "email_confirmed_at", "") or ""),
+        "user_metadata": user_metadata if isinstance(user_metadata, dict) else {},
+        "app_metadata": app_metadata if isinstance(app_metadata, dict) else {},
+    }
+
+
+def _list_auth_user_rows() -> dict[str, dict[str, Any]]:
+    admin_api = _admin_auth_api()
+    if not admin_api or not hasattr(admin_api, "list_users"):
+        return {}
+
+    auth_rows: dict[str, dict[str, Any]] = {}
+    per_page = 200
+
+    for page in range(1, 51):
+        try:
+            batch = admin_api.list_users(page=page, per_page=per_page)
+        except Exception as e:
+            print(f"Erreur lecture users auth Supabase: {e}")
+            break
+
+        items = _extract_auth_items(batch)
+        if not items:
+            break
+
+        for item in items:
+            normalized = _normalize_auth_user_payload(item)
+            user_id = str(normalized.get("id", "") or "").strip()
+            if user_id:
+                auth_rows[user_id] = normalized
+
+        if len(items) < per_page:
+            break
+
+    return auth_rows
+
+
+def _get_auth_user_row(user_id: str) -> dict[str, Any]:
+    safe_user_id = str(user_id or "").strip()
+    if not safe_user_id:
+        return {}
+
+    admin_api = _admin_auth_api()
+    if not admin_api or not hasattr(admin_api, "get_user_by_id"):
+        return {}
+
+    try:
+        response = admin_api.get_user_by_id(safe_user_id)
+        return _normalize_auth_user_payload(response)
+    except Exception as e:
+        print(f"Erreur lecture auth user '{safe_user_id}': {e}")
+        return {}
+
+
+def _merge_profile_and_auth_rows(profile_row: dict | None, auth_row: dict | None) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
+    if isinstance(auth_row, dict):
+        merged.update(auth_row)
+    if isinstance(profile_row, dict):
+        merged.update(profile_row)
+
+    if not str(merged.get("email", "") or "").strip():
+        merged["email"] = str((auth_row or {}).get("email", "") or "").strip()
+    if not str(merged.get("display_name", "") or "").strip():
+        merged["display_name"] = str((auth_row or {}).get("display_name", "") or "").strip()
+    if not str(merged.get("role", "") or "").strip():
+        merged["role"] = str((auth_row or {}).get("role", "") or "user").strip().lower()
+
+    return merged
+
+
+def _ensure_user_profile_row(user_id: str, email: str = "", role: str = "user", auth_row: dict | None = None) -> dict:
+    safe_user_id = str(user_id or "").strip()
+    if not safe_user_id:
+        return {}
+
+    existing = _get_user_profile_row(safe_user_id)
+    if existing:
+        return existing
+
+    payload = {
+        "id": safe_user_id,
+        "email": str(email or (auth_row or {}).get("email", "") or "").strip().lower(),
+        "role": str(role or (auth_row or {}).get("role", "") or "user").strip().lower() or "user",
+        "localisation": None,
+    }
+
+    try:
+        _profile_table().insert(payload).execute()
+    except Exception as e:
+        print(f"Erreur creation profil utilisateur '{safe_user_id}': {e}")
+
+    return _get_user_profile_row(safe_user_id)
+
+
 def extract_bearer_token(request: Request) -> str | None:
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
@@ -143,8 +330,13 @@ def _get_user_from_token(token: str):
 
 def get_role_from_token(token: str) -> str:
     user = _get_user_from_token(token)
-    profile = supabase.table("utilisateur").select("role").eq("id", user.id).maybe_single().execute()
-    return profile.data.get("role", "user") if profile.data else "user"
+    try:
+        profile = _profile_table().select("role").eq("id", user.id).maybe_single().execute()
+        if profile.data:
+            return str(profile.data.get("role", "user") or "user")
+    except Exception as e:
+        print(f"Erreur lecture role token: {e}")
+    return "user"
 
 
 def require_admin(request: Request) -> None:
@@ -164,7 +356,7 @@ def _get_authenticated_user(request: Request):
 
 def _get_user_profile_row(user_id: str) -> dict:
     try:
-        query = supabase.table("utilisateur").select("*").eq("id", user_id).maybe_single().execute()
+        query = _profile_table().select("*").eq("id", user_id).maybe_single().execute()
         if query and isinstance(query.data, dict):
             return query.data
     except Exception as e:
@@ -263,6 +455,29 @@ def _is_report_history_entry(row: dict) -> bool:
     detail = str(row.get("detail", "") or "").lower()
     haystack = f"{action} {detail}"
     return any(token in haystack for token in ("signal", "report", "probl", "incident", "alerte"))
+
+
+def _is_admin_history_entry(row: dict) -> bool:
+    if not isinstance(row, dict):
+        return False
+
+    action = str(row.get("action", "") or "").strip().lower()
+    if not action:
+        return False
+
+    if action.startswith("admin -"):
+        return True
+
+    return action in {
+        "utilisateurs",
+        "gestion utilisateurs",
+        "session",
+        "profil",
+        "navigation",
+        "consultation",
+        "suppression",
+        "remise en service",
+    }
 
 
 def _summarize_user_history(rows: list[dict]) -> dict[str, dict]:
@@ -461,12 +676,87 @@ def add_user_history(request: Request, data: UserHistoryRequest = Body(...)):
     return {"success": True, "id": str(inserted.inserted_id)}
 
 
+@auth_router.post("/admin/history")
+def add_admin_history(request: Request, data: UserHistoryRequest = Body(...)):
+    require_admin(request)
+    user = _get_authenticated_user(request)
+    now = datetime.now(timezone.utc)
+    raw_action = str(data.action or "").strip()
+    if not raw_action:
+        raise HTTPException(status_code=400, detail="Action admin requise")
+
+    action_label = raw_action if raw_action.lower().startswith("admin -") else f"Admin - {raw_action}"
+    doc = {
+        "user_id": str(user.id),
+        "email": getattr(user, "email", "") or "",
+        "action": action_label,
+        "detail": data.detail,
+        "status": data.status,
+        "date": now.strftime("%d/%m/%Y %H:%M:%S"),
+        "created_at": now.isoformat(),
+    }
+    inserted = user_history_collection.insert_one(doc)
+    _prune_user_history(str(user.id))
+    return {"success": True, "id": str(inserted.inserted_id)}
+
+
+@auth_router.get("/admin/history")
+def get_admin_history(request: Request, limit: int = 200):
+    require_admin(request)
+    _prune_user_history()
+
+    safe_limit = max(20, min(int(limit or 200), 500))
+    scan_limit = min(max(safe_limit * 20, 400), 4000)
+
+    rows = list(
+        user_history_collection.find()
+        .sort("created_at", -1)
+        .limit(scan_limit)
+    )
+
+    result = []
+    for row in rows:
+        if not _is_admin_history_entry(row):
+            continue
+
+        created_at = str(row.get("created_at", "") or "")
+        result.append(
+            {
+                "_id": str(row.get("_id")),
+                "user_id": str(row.get("user_id", "") or ""),
+                "email": str(row.get("email", "") or ""),
+                "action": str(row.get("action", "") or ""),
+                "detail": str(row.get("detail", "") or ""),
+                "status": str(row.get("status", "") or ""),
+                "date": _format_history_date(str(row.get("date", "") or ""), created_at),
+                "created_at": created_at,
+            }
+        )
+
+        if len(result) >= safe_limit:
+            break
+
+    return result
+
+
 @auth_router.get("/admin/users")
 def get_admin_users(request: Request):
     require_admin(request)
-    rows = supabase.table("utilisateur").select("*").execute()
-    data = rows.data if rows and isinstance(rows.data, list) else []
-    user_ids = [str(item.get("id", "") or "").strip() for item in data if isinstance(item, dict) and item.get("id")]
+    profile_rows: list[dict] = []
+    try:
+        rows = _profile_table().select("*").execute()
+        profile_rows = _extract_response_rows(rows)
+    except Exception as e:
+        print(f"Erreur lecture table utilisateur admin: {e}")
+        profile_rows = []
+
+    profile_map = {
+        str(item.get("id", "") or "").strip(): item
+        for item in profile_rows
+        if isinstance(item, dict) and str(item.get("id", "") or "").strip()
+    }
+    auth_map = _list_auth_user_rows()
+    user_ids = sorted(set(profile_map.keys()) | set(auth_map.keys()))
 
     history_summary: dict[str, dict] = {}
     if user_ids:
@@ -493,25 +783,24 @@ def get_admin_users(request: Request):
             history_summary = {}
 
     result = []
-    for item in data:
-        if not isinstance(item, dict):
-            continue
-
-        user_id = str(item.get("id", "") or "").strip()
+    for user_id in user_ids:
         if not user_id:
             continue
 
+        item = _merge_profile_and_auth_rows(profile_map.get(user_id), auth_map.get(user_id))
         favorites_raw = item.get("favorites", [])
         favorites = _normalize_favorites(favorites_raw if isinstance(favorites_raw, list) else [])
         history_info = history_summary.get(user_id, {})
         last_profile_update = _pick_profile_update_value(item)
+        email = str(item.get("email", "") or "")
+        role = str(item.get("role", "user") or "user").strip().lower() or "user"
 
         result.append(
             {
                 "id": user_id,
-                "email": str(item.get("email", "") or ""),
-                "role": str(item.get("role", "user") or "user"),
-                "display_name": _display_name_from_profile(str(item.get("email", "") or ""), item),
+                "email": email,
+                "role": role,
+                "display_name": _display_name_from_profile(email, item),
                 "favorites_count": len(favorites),
                 "favorites": favorites,
                 "history_count": int(history_info.get("history_count", 0) or 0),
@@ -526,6 +815,14 @@ def get_admin_users(request: Request):
             }
         )
 
+    result.sort(
+        key=lambda row: (
+            0 if str(row.get("role", "")).lower() == "admin" else 1,
+            str(row.get("display_name", "") or "").lower(),
+            str(row.get("email", "") or "").lower(),
+            str(row.get("id", "") or ""),
+        )
+    )
     return result
 
 
@@ -594,22 +891,46 @@ def get_admin_user_activity(request: Request, limit: int = 200):
 def update_admin_user_role(target_user_id: str, request: Request, data: UpdateUserRoleRequest = Body(...)):
     require_admin(request)
     actor = _get_authenticated_user(request)
+    actor_id = str(actor.id)
+    safe_target_user_id = str(target_user_id or "").strip()
     role = str(data.role or "").strip().lower()
     if role not in {"admin", "user"}:
         raise HTTPException(status_code=400, detail="Role invalide")
+    if not safe_target_user_id:
+        raise HTTPException(status_code=400, detail="Utilisateur cible manquant")
+    if actor_id == safe_target_user_id and role != "admin":
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas retirer votre propre role admin")
 
-    row = _get_user_profile_row(target_user_id)
-    if not row:
+    row = _get_user_profile_row(safe_target_user_id)
+    auth_row = _get_auth_user_row(safe_target_user_id)
+    if not row and not auth_row:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    if not row:
+        row = _ensure_user_profile_row(
+            safe_target_user_id,
+            email=str((auth_row or {}).get("email", "") or ""),
+            role=str((auth_row or {}).get("role", "") or "user"),
+            auth_row=auth_row,
+        )
+        if not row:
+            raise HTTPException(status_code=500, detail="Impossible de preparer le profil utilisateur")
 
-    supabase.table("utilisateur").update({"role": role}).eq("id", target_user_id).execute()
+    try:
+        _profile_table().update({"role": role}).eq("id", safe_target_user_id).execute()
+    except Exception as e:
+        print(f"Erreur update role utilisateur '{safe_target_user_id}': {e}")
+        raise HTTPException(status_code=500, detail="Impossible de mettre a jour le role utilisateur")
 
-    recipient_email = str(row.get("email", "") or "")
+    updated_profile_row = _get_user_profile_row(safe_target_user_id)
+    if not updated_profile_row:
+        raise HTTPException(status_code=500, detail="Le profil utilisateur n'a pas ete mis a jour")
+    updated_row = _merge_profile_and_auth_rows(updated_profile_row, auth_row)
+    recipient_email = str(updated_row.get("email", "") or row.get("email", "") or "")
     create_notification(
         target_role=role,
-        recipient_user_id=target_user_id,
+        recipient_user_id=safe_target_user_id,
         recipient_email=recipient_email,
-        actor_user_id=str(actor.id),
+        actor_user_id=actor_id,
         actor_email=str(getattr(actor, "email", "") or ""),
         title="Role mis a jour",
         message=f"Votre role a ete modifie vers '{role}'.",
@@ -619,10 +940,10 @@ def update_admin_user_role(target_user_id: str, request: Request, data: UpdateUs
 
     return {
         "success": True,
-        "id": target_user_id,
+        "id": safe_target_user_id,
         "role": role,
         "email": recipient_email,
-        "display_name": _display_name_from_profile(recipient_email, row),
+        "display_name": _display_name_from_profile(recipient_email, updated_row),
     }
 
 
@@ -630,46 +951,64 @@ def update_admin_user_role(target_user_id: str, request: Request, data: UpdateUs
 def delete_admin_user(target_user_id: str, request: Request):
     require_admin(request)
     actor = _get_authenticated_user(request)
+    actor_id = str(actor.id)
+    safe_target_user_id = str(target_user_id or "").strip()
+    if not safe_target_user_id:
+        raise HTTPException(status_code=400, detail="Utilisateur cible manquant")
+    if actor_id == safe_target_user_id:
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas supprimer votre propre compte")
 
-    row = _get_user_profile_row(target_user_id)
-    if not row:
+    row = _get_user_profile_row(safe_target_user_id)
+    auth_row = _get_auth_user_row(safe_target_user_id)
+    if not row and not auth_row:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
 
-    recipient_email = str(row.get("email", "") or "")
+    merged_user = _merge_profile_and_auth_rows(row, auth_row)
+    recipient_email = str(merged_user.get("email", "") or "")
 
-    # Try to remove the auth account from Supabase (best-effort).
     auth_deleted = False
-    auth_error = None
-    try:
-        ok, err = delete_user_admin(target_user_id)
-        auth_deleted = bool(ok)
-        auth_error = err
-        if not ok:
-            print(f"delete_user_admin returned error: {err}")
-    except Exception as e:
-        auth_error = str(e)
-        print(f"Erreur suppression auth supabase: {e}")
+    auth_error = ""
+    if auth_row:
+        try:
+            ok, err = delete_user_admin(safe_target_user_id)
+            auth_deleted = bool(ok)
+            auth_error = str(err or "").strip()
+            if not ok:
+                print(f"delete_user_admin returned error: {err}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Suppression Supabase Auth impossible: {auth_error or 'erreur inconnue'}",
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Erreur suppression auth supabase: {e}")
+            raise HTTPException(status_code=500, detail=f"Suppression Supabase Auth impossible: {e}")
 
-    # Remove profile row from utilisateur table
-    try:
-        supabase.table("utilisateur").delete().eq("id", target_user_id).execute()
-    except Exception as e:
-        print(f"Erreur suppression ligne utilisateur: {e}")
+    profile_deleted = False
+    if row:
+        try:
+            _profile_table().delete().eq("id", safe_target_user_id).execute()
+            profile_deleted = True
+        except Exception as e:
+            print(f"Erreur suppression ligne utilisateur: {e}")
+            raise HTTPException(status_code=500, detail="Suppression du profil utilisateur impossible")
 
     # Remove related MongoDB documents (history, notifications)
     try:
-        user_history_collection.delete_many({"user_id": target_user_id})
+        user_history_collection.delete_many({"user_id": safe_target_user_id})
     except Exception as e:
         print(f"Erreur suppression historique utilisateur: {e}")
     try:
-        notifications_collection.delete_many({"$or": [{"recipient_user_id": target_user_id}, {"actor_user_id": target_user_id}]})
+        notifications_collection.delete_many({"$or": [{"recipient_user_id": safe_target_user_id}, {"actor_user_id": safe_target_user_id}]})
     except Exception as e:
         print(f"Erreur suppression notifications utilisateur: {e}")
 
-    result = {"success": True, "id": target_user_id, "email": recipient_email}
+    result = {"success": True, "id": safe_target_user_id, "email": recipient_email}
     result["auth_deleted"] = auth_deleted
+    result["profile_deleted"] = profile_deleted
     if auth_error:
-        result["auth_error"] = str(auth_error)
+        result["auth_error"] = auth_error
     return result
 
 

@@ -65,7 +65,7 @@
 
   function readH(){ try{const r=localStorage.getItem('adminHistory');const p=r?JSON.parse(r):[];return Array.isArray(p)?p:[];}catch{return[];} }
   function writeH(v){ localStorage.setItem('adminHistory',JSON.stringify(v.slice(0,30))); }
-  function addH(a,d,s){ const h=readH(); h.unshift({date:new Date().toLocaleString('fr-FR'),action:a,detail:d,status:s||'Succes'}); writeH(h); const t=localStorage.getItem('userToken'); if(t) fetch(`${apiBase}/user/history`,{method:'POST',headers:authHeaders(),body:JSON.stringify({action:a,detail:d,status:s||'Succes'})}).catch(()=>{}); }
+  function addH(a,d,s){ const t=localStorage.getItem('userToken'); if(t) fetch(`${apiBase}/admin/history`,{method:'POST',headers:authHeaders(),body:JSON.stringify({action:a,detail:d,status:s||'Succes'})}).catch(()=>{}); }
 
   async function loadProfile(){
     try{ const r=await fetch(`${apiBase}/user/profile`,{headers:authHeaders()}); if(!r.ok)return; const p=await r.json(); adminProfileData=p; if(String(p.role||'').toLowerCase()&&String(p.role||'').toLowerCase()!=='admin'){window.location.href='user.html';return;} const em=String(p.email||localStorage.getItem('userEmail')||'admin@intellibuild.com'); const disp=String(localStorage.getItem('adminDisplayName')||'').trim()||String(p.display_name||'').trim()||em.split('@')[0]||'Admin'; localStorage.setItem('userRole','admin'); localStorage.setItem('userEmail',em); localStorage.setItem('adminDisplayName',disp); applyName(disp); }catch(e){console.error('Profil:',e);}
@@ -206,23 +206,16 @@
     openOverlay('Historique','<div class="p-4 text-slate-500">Chargement...</div>');
     (async()=>{
       try{
-        let ah = [];
-        try{
-          const resp = await fetch(`${apiBase}/user/history`,{headers:authHeaders()});
-          if(resp.ok){ ah = await resp.json(); }
-        }catch(e){ ah = []; }
-
-        // If server returned nothing, fallback to localStorage history
-        let source = Array.isArray(ah)?ah.slice() : [];
-        if(!source || source.length===0){ source = readH(); }
-
-        const al=(Array.isArray(source)?source:[]).filter(x=>{const a=String(x&&x.action?x.action:'').toLowerCase();return a.includes('admin')||['utilisateurs','session','profil','navigation'].includes(a);});
+        const resp = await fetch(`${apiBase}/admin/history?limit=200`,{headers:authHeaders()});
+        if(!resp.ok) throw new Error('history_fetch_failed');
+        const ah = await resp.json().catch(()=>[]);
+        const al=Array.isArray(ah)?ah:[];
         const rows = al.length ? al.map(i=>`<tr><td class="p-3 text-sm text-slate-600 whitespace-nowrap">${i.date||'-'}</td><td class="p-3 text-sm font-semibold text-slate-700">${esc(i.action)}</td><td class="p-3 text-sm">${esc(i.detail)}</td><td class="p-3 text-sm"><span class="px-3 py-1 rounded-full text-xs font-bold ${String(i.status||'').toLowerCase().includes('succes')?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${esc(i.status||'-')}</span></td></tr>`).join('') : '';
 
         if(rows){
           el.overlayBody.innerHTML=`<div class="glass-main p-6 rounded-3xl shadow-2xl"><h3 class="text-lg font-bold mb-3">Historique admin</h3><table class="w-full text-left"><thead class="text-gray-600 border-b border-gray-300"><tr class="text-[11px] uppercase font-bold tracking-wider"><th class="p-3">Date</th><th class="p-3">Action</th><th class="p-3">Détail</th><th class="p-3">Statut</th></tr></thead><tbody class="divide-y divide-gray-200">${rows}</tbody></table></div>`;
         } else {
-          el.overlayBody.innerHTML=`<div class="glass-main p-6 rounded-3xl shadow-2xl"><h3 class="text-lg font-bold mb-3">Historique admin</h3><div class="p-4 text-slate-500">Aucun historique disponible (ni serveur, ni local).</div></div>`;
+          el.overlayBody.innerHTML=`<div class="glass-main p-6 rounded-3xl shadow-2xl"><h3 class="text-lg font-bold mb-3">Historique admin</h3><div class="p-4 text-slate-500">Aucun historique admin disponible.</div></div>`;
         }
 
       }catch(e){ el.overlayBody.innerHTML='<div class="text-red-600">Erreur chargement historique.</div>'; }
