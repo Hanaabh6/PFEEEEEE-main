@@ -93,10 +93,9 @@
 
   async function initCharts(){
     const cols=['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#f97316'];
-    const scols={active:'#10b981',inactive:'#ef4444',en_utilisation:'#f59e0b',panne:'#f97316',autre:'#94a3b8'};
-    const [bt,bs,tv,tr] = await Promise.all([
+    const [bt,usage,tv,tr] = await Promise.all([
       fetch(`${apiBase}/admin/stats/by-type`,{headers:authHeaders()}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(`${apiBase}/admin/stats/by-status`,{headers:authHeaders()}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(`${apiBase}/admin/stats/app-usage-daily?days=7`,{headers:authHeaders()}).then(r=>r.ok?r.json():({labels:[],users:[],admins:[]})).catch(()=>({labels:[],users:[],admins:[]})),
       fetch(`${apiBase}/admin/stats/top-viewed?limit=6`,{headers:authHeaders()}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(`${apiBase}/admin/stats/top-reported?limit=6`,{headers:authHeaders()}).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
@@ -149,12 +148,23 @@
     const topViewedValues = (tv||[]).map(x=>x.view_count||0).slice(0,6);
     const topReportedLabels = (tr||[]).map(x=>x.thing_name||'Inconnu').slice(0,6);
     const topReportedValues = (tr||[]).map(x=>x.count||0).slice(0,6);
+    const usageLabels = (usage && Array.isArray(usage.labels) ? usage.labels : []).map((d) => {
+      try {
+        const dt = new Date(`${d}T00:00:00`);
+        return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+      } catch (e) {
+        return d;
+      }
+    });
+    const usageUsers = usage && Array.isArray(usage.users) ? usage.users.map(v => Number(v) || 0) : [];
+    const usageAdmins = usage && Array.isArray(usage.admins) ? usage.admins.map(v => Number(v) || 0) : [];
+    const usageMax = Math.max(1, ...usageUsers, ...usageAdmins);
 
     setBarChartHeight('chartTopViewed', topViewedLabels.length);
     setBarChartHeight('chartTopReported', topReportedLabels.length);
 
     chartInstances.type=new Chart(document.getElementById('chartByType'),{type:'doughnut',data:{labels:(bt||[]).map(x=>x.type||'Inconnu'),datasets:[{data:(bt||[]).map(x=>x.count||0),backgroundColor:cols,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}},cutout:'65%'}});
-    chartInstances.status=new Chart(document.getElementById('chartByStatus'),{type:'doughnut',data:{labels:(bs||[]).map(x=>x.status||'Inconnu'),datasets:[{data:(bs||[]).map(x=>x.count||0),backgroundColor:(bs||[]).map(x=>scols[x.status]||'#94a3b8'),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}},cutout:'65%'}});
+    chartInstances.usageDaily=new Chart(document.getElementById('chartUsageDaily'),{type:'line',data:{labels:usageLabels,datasets:[{label:'Users',data:usageUsers,borderColor:'#2563eb',backgroundColor:'rgba(37, 99, 235, 0.28)',fill:true,tension:0.42,pointRadius:3,pointHoverRadius:5,borderWidth:2.2},{label:'Admins',data:usageAdmins,borderColor:'#f97316',backgroundColor:'rgba(249, 115, 22, 0.28)',fill:true,tension:0.42,pointRadius:3,pointHoverRadius:5,borderWidth:2.2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,boxWidth:10,font:{size:11,weight:'700'}}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,suggestedMax:usageMax,ticks:{precision:0,stepSize:Math.max(1,Math.ceil(usageMax/5))},grid:{color:'rgba(148, 163, 184, 0.2)'}}}}});
     chartInstances.viewed=new Chart(document.getElementById('chartTopViewed'),{type:'bar',data:{labels:topViewedLabels,datasets:[{label:'Vues',data:topViewedValues,backgroundColor:'#10b981',borderRadius:6,maxBarThickness:22}]},options:barChartOptions(topViewedValues)});
     chartInstances.reported=new Chart(document.getElementById('chartTopReported'),{type:'bar',data:{labels:topReportedLabels,datasets:[{label:'Signalements',data:topReportedValues,backgroundColor:'#ef4444',borderRadius:6,maxBarThickness:22}]},options:barChartOptions(topReportedValues)});
   }

@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, HTTPException, Request
 from typing import Any
 
-from ..base import things_collection, notifications_collection, user_history_collection
+from ..base import things_collection, notifications_collection, user_history_collection, db
 
 stats_router = APIRouter(tags=["stats"])
 
@@ -66,6 +68,28 @@ def _build_thing_state_map(thing_ids: list[str]) -> dict[str, dict[str, Any]]:
         for row in rows
         if str(row.get("id") or "").strip()
     }
+
+
+def _parse_created_at_iso(raw_value: str) -> datetime | None:
+    value = str(raw_value or "").strip()
+    if not value:
+        return None
+
+    try:
+        normalized = value.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(normalized)
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _normalize_history_action(value: str) -> str:
+    text = str(value or "").strip().lower()
+    if text.startswith("admin -"):
+        text = text.replace("admin -", "", 1).strip()
+    return text
 
 
 @stats_router.get("/admin/stats/overview")
@@ -335,3 +359,91 @@ def get_admin_notifications_count(request: Request):
         return {"unread": unread}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur notifications count: {e}")
+
+
+@stats_router.get("/admin/stats/app-usage-daily")
+def get_app_usage_daily(request: Request, days: int = 7):
+    _require_authenticated_user(request)
+    try:
+        safe_days = max(3, min(int(days or 7), 30))
+        now_utc = datetime.now(timezone.utc)
+        today = now_utc.date()
+        start_date = today - timedelta(days=safe_days - 1)
+
+        date_labels = [
+            (start_date + timedelta(days=offset)).isoformat()
+            for offset in range(safe_days)
+        ]
+        users_counts = {label: 0 for label in date_labels}
+        admins_counts = {label: 0 for label in date_labels}
+
+        scan_start = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc).isoformat()
+        rows = list(
+            user_history_collection.find(
+                {
+                    "created_at": {"$gte": scan_start},
+                    "action": {"$regex": "connexion|session", "$options": "i"},
+                },
+                {"created_at": 1, "action": 1, "user_id": 1, "email": 1},
+            )
+        )
+
+        user_ids = [str(row.get("user_id") or "").strip() for row in rows if str(row.get("user_id") or "").strip()]
+        role_map: dict[str, str] = {}
+        if user_ids:
+            profile_rows = list(
+                db.utilisateur.find(
+                    {"id": {"$in": list(dict.fromkeys(user_ids))}},
+                    {"id": 1, "role": 1},
+                )
+            )
+            role_map = {
+                str(row.get("id") or "").strip(): str(row.get("role") or "user").strip().lower() or "user"
+                for row in profile_rows
+                if str(row.get("id") or "").strip()
+            }
+
+        for row in rows:
+            dt = _parse_created_at_iso(str(row.get("created_at") or ""))
+            if dt is None:
+                continue
+
+            d = dt.date()
+            if d < start_date or d > today:
+                continue
+
+            key = d.isoformat()
+            action = _normalize_history_action(str(row.get("action") or ""))
+            user_role = role_map.get(str(row.get("user_id") or "").strip(), "user")
+            if action not in {"connexion", "session"}:
+                continue
+
+            if user_role == "admin" or str(row.get("action") or "").lower().startswith("admin -"):
+                admins_counts[key] += 1
+            else:
+                users_counts[key] += 1
+
+        users = [users_counts[label] for label in date_labels]
+        admins = [admins_counts[label] for label in date_labels]
+        totals = [users[i] + admins[i] for i in range(len(date_labels))]
+
+        average_daily = (sum(totals) / len(totals)) if totals else 0.0
+        peak_daily = max(totals) if totals else 0
+        load_level = "normal"
+        if average_daily >= 120 or peak_daily >= 180:
+            load_level = "critical"
+        elif average_daily >= 70 or peak_daily >= 110:
+            load_level = "high"
+
+        return {
+            "labels": date_labels,
+            "users": users,
+            "admins": admins,
+            "totals": totals,
+            "total_connections": int(sum(totals)),
+            "average_daily": round(average_daily, 2),
+            "peak_daily": int(peak_daily),
+            "load_level": load_level,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur stats app usage daily: {e}")
