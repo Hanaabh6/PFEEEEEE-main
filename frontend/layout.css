@@ -19,6 +19,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Strict anti-horizontal-overflow */
+:where(html, body) { max-width: 100%; }
+:where(*) { min-width: 0; }
+
+/* Respect viewport size on mobile (prevents scrollbar/zoom artefacts) */
+html { overflow-y: auto; }
+
+
+/* Extra hardening: never let the root create horizontal overflow */
+body { width: 100%; }
+
+
+
 /* Avoid scrollbars created by transforms/positioning */
 *{ box-sizing: border-box; }
 
@@ -60,7 +73,9 @@ img, svg, video { max-width: 100%; height: auto; }
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
+  max-width: 100%;
 }
+
 
 /* Desktop offset patterns (legacy pages sometimes use margin-left/width calc) */
 @media (min-width: 901px){
