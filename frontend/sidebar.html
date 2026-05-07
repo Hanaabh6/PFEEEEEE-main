@@ -1,0 +1,62 @@
+<template id="sidebar-admin-template">
+  <aside class="ib-sidebar w-64 glass-sidebar admin-sidebar sidebar min-h-screen text-gray-300 p-6 flex flex-col gap-6 shadow-2xl" data-sidebar-role="admin">
+    <div class="text-2xl font-bold flex items-center gap-2 text-white sidebar-logo logo">
+      <img src="intellibuild-mark.svg" alt="IntelliBuild" class="h-10 w-10 rounded-full object-contain">
+      <span data-key="brand">IntelliBuild</span>
+    </div>
+
+    <select id="langSelect" class="lang sidebar-lang w-full bg-gray-800 text-gray-200 rounded-lg p-2 text-sm border border-gray-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+      <option value="fr">FR</option>
+      <option value="en">EN</option>
+      <option value="ar">AR</option>
+    </select>
+    <p id="langNote" class="lang-note text-xs mt-2 opacity-80">Langue active: FR</p>
+
+    <nav id="sideNav" class="sidebar-nav flex flex-col gap-4 mt-10">
+      <a href="index.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-home"></i><span data-key="nav_dashboard">Dashboard</span></a>
+      <a href="admin-users.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-users"></i><span data-key="nav_users">Utilisateurs</span></a>
+      <a href="ajouter-objet.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-plus"></i><span data-key="nav_add">Ajouter</span></a>
+      <a href="objets.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-cube"></i><span data-key="nav_objects">Objets</span></a>
+      <a href="localisations.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-map-marker-alt"></i><span data-key="nav_locations">Plan du batiment</span></a>
+      <a href="#" id="openHistoryOverlay" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-clock-rotate-left"></i><span data-key="nav_history">Historique</span></a>
+      <a href="#" id="openAdminReportsOverlay" onclick="return window.__ibOpenAdminReportsOverlay ? window.__ibOpenAdminReportsOverlay(event) : false;" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-flag"></i><span>Signalements</span></a>
+      <a href="notifications-admin.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-bell"></i><span data-key="nav_notifications">Notifications</span></a>
+      <a href="parametres.html" class="settings-link mt-auto p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition"><i class="fas fa-cog"></i><span data-key="nav_settings">Paramètres</span></a>
+    </nav>
+  </aside>
+</template>
+
+<template id="sidebar-user-template">
+  <aside class="ib-sidebar sidebar" data-sidebar-role="user">
+    <div>
+      <div class="logo sidebar-logo">
+        <img src="intellibuild-mark.svg" alt="Logo IntelliBuild">
+        <h2 class="text-xl font-bold" data-key="brand">IntelliBuild</h2>
+      </div>
+
+      <nav id="sideNav">
+        <a href="user.html"><i class="fas fa-home"></i><span>Recherche</span></a>
+        <a href="mesobjet.html"><i class="fas fa-box-open"></i><span data-key="nav_my_objects">Mes objets</span></a>
+        <a href="localisations-user.html"><i class="fas fa-map-marker-alt"></i><span data-key="nav_locations">Plan du batiment</span></a>
+        <a href="notifications-user.html"><i class="fas fa-bell"></i><span data-key="nav_notifications">Notifications</span></a>
+        <a href="user.html#history" data-history-link="true"><i class="fas fa-clock-rotate-left"></i><span data-key="nav_history">Historique</span></a>
+        <a href="#" id="openFavoritesOverlay"><i class="fas fa-heart"></i><span data-key="nav_favorites">Favoris</span></a>
+        <a href="#" id="openReportsOverlay"><i class="fas fa-flag"></i><span data-key="nav_report_issue">Signaler un problème</span></a>
+        <a href="documatation.html"><i class="fas fa-book-open"></i><span data-key="nav_documentation">Documentation</span></a>
+        <a href="parametres-user.html"><i class="fas fa-cog"></i><span data-key="nav_settings">Paramètres</span></a>
+      </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="lang bg-white/10 p-4 rounded-xl">
+        <div class="lang-title text-xs font-bold mb-2 uppercase opacity-80" data-key="lang_title">Langue</div>
+        <select id="langSelect" class="lang-select w-full bg-slate-900 border border-white/20 rounded-lg p-2 text-sm text-white" aria-label="Choisir la langue">
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+          <option value="ar">AR</option>
+        </select>
+        <p id="langNote" class="lang-note text-xs mt-2 opacity-80">Langue active: FR</p>
+      </div>
+    </div>
+  </aside>
+</template>

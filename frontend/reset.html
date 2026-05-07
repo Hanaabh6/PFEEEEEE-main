@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-key="reset_doc_title">Reinitialiser le mot de passe – IntelliBuild</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="theme.css">
+  <script data-theme-role-script>
+    (function () {
+      var path = (window.location.pathname.split('/').pop() || '').toLowerCase();
+      var page = path.replace('.html', '') || 'home';
+      document.documentElement.setAttribute('data-page', page);
+
+      var role = (localStorage.getItem('userRole') || '').toLowerCase();
+      if (!role) {
+        if (page.indexOf('admin') >= 0 || ['index','ajouter-objet','objets','localisations','parametres'].indexOf(page) >= 0) {
+          role = 'admin';
+        } else if (page.indexOf('user') >= 0 || ['user','mesobjet','localisations-user','parametres-user'].indexOf(page) >= 0) {
+          role = 'user';
+        } else {
+          role = 'guest';
+        }
+      }
+      document.documentElement.setAttribute('data-role', role);
+    })();
+  </script></head>
+<body class="auth-page">
+
+<header class="topbar">
+  <h2>
+    <div class="logo">
+      <img class="brand-logo-lg" src="intellibuild-mark.svg" alt="IntelliBuild">
+      <span data-key="brand">IntelliBuild</span>
+    </div>
+  </h2>
+  <a href="login.html" class="btn outline" data-key="btn_login">Connexion</a>
+</header>
+
+<section class="auth-container">
+  <div class="auth-box">
+    <h2 data-key="reset_title">Reinitialiser le mot de passe</h2>
+    <p data-key="reset_sub">Choisis un nouveau mot de passe.</p>
+
+    <form id="resetForm">
+      <label data-key="label_new_password">Nouveau mot de passe</label>
+      <input id="newPassword" type="password" placeholder="••••••••" data-key="ph_password" data-attr="placeholder" required>
+
+      <label data-key="label_confirm_password">Confirmer le mot de passe</label>
+      <input id="confirmPassword" type="password" placeholder="••••••••" data-key="ph_confirm_password" data-attr="placeholder" required>
+
+      <button type="submit" class="login-btn" data-key="btn_update_password">Mettre a jour</button>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="brand">
+    <img src="intellibuild-mark.svg" alt="IntelliBuild">
+    <span data-key="brand">IntelliBuild</span>
+  </div>
+  <div>(c) 2026 IntelliBuild. All rights reserved.</div>
+</footer>
+
+<script src="config.js"></script>
+<script src="translations.js"></script>
+<script>
+  const SUPABASE_URL = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_ANON_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error("Configuration Supabase manquante dans config.js");
+  }
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function tr(key, fallback, params) {
+    if (window.getTranslationText) return window.getTranslationText(key, fallback, params);
+    return fallback;
+  }
+
+  function getAuthParams() {
+    const out = {};
+    // Lire depuis query string (?code=... ou ?token_hash=...)
+    try {
+      const search = new URLSearchParams(window.location.search || '');
+      for (const [k, v] of search.entries()) out[k] = v;
+    } catch (e) {
+      console.warn('Erreur parsing search params', e);
+    }
+    // Lire depuis hash (#access_token=...&refresh_token=...) pour compatibilité
+    try {
+      const hash = (window.location.hash || '').substring(1);
+      const hashParams = new URLSearchParams(hash);
+      for (const [k, v] of hashParams.entries()) out[k] = v;
+    } catch (e) {
+      console.warn('Erreur parsing hash params', e);
+    }
+    return out;
+  }
+
+  function cleanupAuthParams() {
+    try {
+      const url = new URL(window.location.href);
+      [
+        'code',
+        'token',
+        'token_hash',
+        'type',
+        'access_token',
+        'refresh_token',
+        'expires_at',
+        'expires_in',
+        'token_type'
+      ].forEach(function (key) {
+        url.searchParams.delete(key);
+      });
+      history.replaceState(null, '', url.pathname + url.search);
+    } catch (e) {
+      console.warn('Impossible de nettoyer l URL', e);
+    }
+  }
+
+  async function hasActiveSession() {
+    try {
+      const resp = await client.auth.getSession();
+      return Boolean(resp && resp.data && resp.data.session);
+    } catch (e) {
+      console.warn('Erreur getSession', e);
+      return false;
+    }
+  }
+
+  async function initRecoverySession() {
+    const params = getAuthParams();
+    const recoveryType = params.type || 'recovery';
+
+    console.log('reset page - auth params parsed');
+
+    if (await hasActiveSession()) {
+      cleanupAuthParams();
+      return true;
+    }
+
+    if (params.code) {
+      try {
+        const resp = await client.auth.exchangeCodeForSession(params.code);
+        if (resp && resp.error) {
+          console.error('Erreur exchangeCodeForSession:', resp.error);
+          return false;
+        }
+        cleanupAuthParams();
+        return await hasActiveSession();
+      } catch (e) {
+        console.error('Exception exchangeCodeForSession:', e);
+        return false;
+      }
+    }
+
+    if (params.token_hash) {
+      try {
+        const resp = await client.auth.verifyOtp({
+          type: recoveryType,
+          token_hash: params.token_hash
+        });
+        if (resp && resp.error) {
+          console.error('Erreur verifyOtp:', resp.error);
+          return false;
+        }
+        cleanupAuthParams();
+        return await hasActiveSession();
+      } catch (e) {
+        console.error('Exception verifyOtp:', e);
+        return false;
+      }
+    }
+
+    if (!params.access_token || !params.refresh_token) {
+      if (params.access_token && !params.refresh_token) {
+        console.warn('Lien de reset invalide: access_token sans refresh_token. Utiliser {{ .ConfirmationURL }} ou token_hash={{ .TokenHash }} dans le template email Supabase.');
+      } else {
+        console.warn('Aucun parametre de recuperation reconnu');
+      }
+      return false;
+    }
+
+    try {
+      const resp = await client.auth.setSession({
+        access_token: params.access_token,
+        refresh_token: params.refresh_token
+      });
+      console.log('setSession - status:', resp && resp.error ? 'error' : 'ok');
+      if (resp && resp.error) {
+        console.error('Erreur setSession:', resp.error);
+        return false;
+      }
+      cleanupAuthParams();
+      return await hasActiveSession();
+    } catch (e) {
+      console.error('Exception setSession:', e);
+      return false;
+    }
+  }
+
+  let sessionInitialized = false;
+
+  // Initialiser la session au chargement de la page
+  window.addEventListener('load', async () => {
+    console.log('Page loaded - initializing session from URL...');
+    sessionInitialized = await initRecoverySession();
+    if (!sessionInitialized) {
+      document.getElementById('resetForm').style.display = 'none';
+      alert(tr('reset_error_invalid', 'Lien invalide ou expire.'));
+    } else {
+      console.log('Session initialized successfully');
+    }
+  });
+
+  document.getElementById('resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!sessionInitialized) {
+      alert(tr('reset_error_invalid', 'Lien invalide ou expire.'));
+      return;
+    }
+
+    const pass = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (pass !== confirm) {
+      alert(tr('reset_error_mismatch', 'Les mots de passe ne correspondent pas.'));
+      return;
+    }
+
+    const { error } = await client.auth.updateUser({ password: pass });
+    if (error) {
+      alert(error.message || tr('reset_error_update', 'Erreur lors de la mise a jour.'));
+      return;
+    }
+
+    alert(tr('reset_success', 'Mot de passe bien changé.'));
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>

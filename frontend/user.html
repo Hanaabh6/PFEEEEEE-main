@@ -1,0 +1,2815 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-key="p1_doc_title">IntelliBuild - User</title>
+<script src="config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --bg-overlay: rgba(15, 23, 42, 0.48);
+  --sidebar-bg: rgba(0, 0, 0, 0.92);
+  --text-light: #ffffff;
+  --menu-link: #d1d5db;
+  --menu-hover-bg: #1f2937;
+  --menu-active-bg: #047857;
+  --menu-active-ring: rgba(16, 185, 129, 0.45);
+  --main-glass-bg: rgba(255, 255, 255, 0.78);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --status-ok-bg: #dcfce7;
+  --status-ok-text: #065f46;
+  --status-off-bg: #ffe4e6;
+  --status-off-text: #be123c;
+  --history-accent: #0f766e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  background: linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+    url("https://images.pexels.com/photos/4040649/pexels-photo-4040649.jpeg") no-repeat center center fixed;
+  background-size: cover;
+  color: #0f1720;
+}
+.container { display: flex; min-height: 100vh; width: min(1500px, 100%); margin: 0 auto; }
+.sidebar {
+  width: 260px; background: var(--sidebar-bg); color: var(--text-light);
+  padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+}
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo img { width: 36px; }
+.sidebar nav a {
+  display: block; padding: 10px 12px; margin: 6px 0; text-decoration: none; color: var(--menu-link);
+  border-radius: 10px; transition: background 0.25s ease, color 0.25s ease; cursor: pointer;
+}
+.sidebar nav i {
+  width: 18px;
+  text-align: center;
+  margin-right: 10px;
+}
+.sidebar nav a:hover { background: var(--menu-hover-bg); color: #fff; }
+.sidebar nav .nav-active {
+  background: var(--menu-active-bg);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--menu-active-ring);
+}
+.sidebar-bottom { display: grid; gap: 8px; }
+.lang { background: rgba(255, 255, 255, 0.08); padding: 8px; border-radius: 10px; }
+.lang-title { margin-bottom: 6px; font-size: 12px; font-weight: 700; }
+.lang-select {
+  width: 100%; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(17, 24, 39, 0.9); color: var(--text-light);
+  border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.lang-note { margin-top: 6px; margin-bottom: 0; font-size: 10px; opacity: 0.88; }
+
+.main { flex: 1; padding: 30px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.quick-position-bar {
+  margin-top: 14px;
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+.quick-position-field {
+  display: grid;
+  gap: 6px;
+}
+.quick-position-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+}
+.quick-position-select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 14px;
+}
+.quick-position-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+  outline: none;
+}
+.quick-position-btn {
+  border: 1px solid #10b981;
+  background: #10b981;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.quick-position-btn:hover {
+  background: #059669;
+  border-color: #059669;
+}
+.quick-position-room {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #334155;
+  font-weight: 700;
+}
+.search {
+  width: min(100%, 560px); padding: 14px 16px; border-radius: 25px; border: none; outline: none;
+  background: rgba(255, 255, 255, 0.9); box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12); font-size: 15px;
+}
+.profile { position: relative; }
+.avatar {
+  width: 52px; height: 52px; background: #1f9d55; color: var(--text-light);
+  border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; border: none;
+}
+.dropdown {
+  display: none; position: absolute; right: 0; top: 60px; background: rgba(255, 255, 255, 0.96);
+  padding: 15px; border-radius: 15px; width: 200px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); z-index: 20;
+}
+.dropdown.open { display: block; }
+.dropdown a { display: block; padding: 10px; text-decoration: none; color: #0f172a; border-radius: 8px; }
+.dropdown a:hover { background: #e8fce9; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin: 24px 0; }
+.card {
+  background: var(--card-bg); backdrop-filter: blur(10px); padding: 24px; border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+}
+.card h3 { margin: 0; font-size: 19px; }
+.card p { margin: 10px 0 0; font-size: 26px; font-weight: 800; }
+
+.table-box {
+  background: var(--main-glass-bg); backdrop-filter: blur(10px); border-radius: 22px; padding: 24px;
+  overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 18px 34px rgba(15, 23, 42, 0.2);
+}
+.section-head { margin: 0 0 14px; font-size: 24px; color: #0f1720; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 17px; text-align: left; font-size: 15px; }
+tbody tr:hover { background: rgba(16, 185, 129, 0.1); }
+
+.badge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-weight: 600; }
+.status-active { background: #dcfce7; color: #065f46; }
+.status-inactive { background: #ffe4e6; color: #be123c; }
+
+.overlay-modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 1200; }
+.overlay-modal[hidden] { display: none; }
+.overlay-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.66); backdrop-filter: blur(3px); }
+.overlay-panel {
+  position: relative; width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
+  border-radius: 22px; padding: 24px; background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 55px rgba(2, 6, 23, 0.35); border: 1px solid rgba(148, 163, 184, 0.25);
+}
+.overlay-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.overlay-title { margin: 0; font-size: 22px; color: #0f172a; }
+.overlay-close {
+  border: none; width: 36px; height: 36px; border-radius: 999px; background: #e2e8f0; color: #0f172a; font-size: 18px; cursor: pointer;
+}
+.overlay-close:hover { background: #cbd5e1; }
+
+.app-toast {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 1600;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  max-width: min(420px, calc(100vw - 36px));
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 38px rgba(2, 6, 23, 0.26);
+  transform: translateY(-8px);
+  opacity: 0;
+  transition: all 0.24s ease;
+}
+
+.app-toast.show {
+  display: flex;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.app-toast-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #ecfeff;
+  border: 1px solid #bae6fd;
+  overflow: hidden;
+  flex: 0 0 46px;
+}
+
+.app-toast-thumb img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.app-toast-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.app-toast-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.app-toast-text {
+  margin: 0;
+  line-height: 1.5;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-toast.success {
+  border-color: rgba(16, 185, 129, 0.42);
+  background: rgba(240, 253, 250, 0.98);
+}
+
+.app-toast.success .app-toast-thumb {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.app-toast.error {
+  border-color: rgba(244, 63, 94, 0.4);
+  background: rgba(255, 241, 242, 0.98);
+}
+
+.app-toast.error .app-toast-thumb {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+.app-toast.info {
+  border-color: rgba(59, 130, 246, 0.36);
+  background: rgba(239, 246, 255, 0.98);
+}
+
+.app-toast.info .app-toast-thumb {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.profile-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+.profile-side {
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: linear-gradient(170deg, #0f766e, #0ea5a4);
+  color: #fff;
+  padding: 18px;
+}
+.profile-avatar-xl {
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.profile-name {
+  margin: 12px 0 2px;
+  font-size: 24px;
+  font-weight: 800;
+}
+.profile-role {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+}
+.profile-main {
+  display: grid;
+  gap: 12px;
+}
+.profile-card {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 14px;
+}
+.profile-card h4 {
+  margin: 0 0 10px;
+  color: #0f172a;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.mini-stat {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #f8fafc;
+  padding: 10px;
+}
+.mini-label { font-size: 12px; color: #64748b; margin: 0 0 4px; }
+.mini-value { margin: 0; font-size: 20px; font-weight: 800; color: #0f172a; }
+.profile-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+.profile-input:focus { border-color: #0ea5a4; box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2); }
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.profile-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.profile-btn.primary { background: linear-gradient(135deg, #0f766e, #0ea5a4); color: #fff; }
+.profile-btn.light { background: #e2e8f0; color: #0f172a; }
+.profile-btn.warn { background: #fee2e2; color: #b91c1c; }
+
+.object-sheet {
+  display: grid;
+  gap: 18px;
+}
+
+.object-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(14, 165, 164, 0.16));
+  border: 1px solid rgba(20, 184, 166, 0.16);
+}
+
+.object-sheet-title {
+  margin: 0;
+  font-size: 1.7rem;
+  color: #0f172a;
+}
+
+.object-sheet-sub {
+  margin: 10px 0 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.object-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.object-action-box {
+  padding: 18px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.object-action-box strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.object-action-box p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.object-action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.object-action-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 14px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.object-action-btn.primary {
+  background: linear-gradient(135deg, #0f766e, #0ea5a4);
+  color: #fff;
+}
+
+.object-action-btn.light {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.object-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.object-status-pill.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.object-status-pill.inactive {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.user-top-area {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.user-locator-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+}
+
+.user-locator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.user-locator-field {
+  display: grid;
+  gap: 6px;
+}
+
+.user-locator-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.user-locator-select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.user-locator-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+  outline: none;
+}
+
+.user-locator-btn {
+  border: 1px solid #10b981;
+  background: #10b981;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-locator-btn:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+.user-locator-btn.ghost {
+  background: #fff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.user-locator-btn.ghost:hover {
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.user-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.user-search-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.user-search-input {
+  flex: 1 1 auto;
+  min-width: 300px;
+  max-width: 100%;
+}
+
+.user-search-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.user-current-pos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #059669;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+  white-space: nowrap;
+}
+
+.user-current-pos i {
+  font-size: 14px;
+}
+
+.user-quick-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0 6px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-chip {
+  white-space: nowrap;
+  flex: 0 0 auto;
+  border: none;
+  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  color: #0f172a;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.filter-chip:hover {
+  background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.filter-chip.is-active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.compact-position-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.compact-position-select {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.compact-position-select:focus {
+  border-color: #10b981;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.14);
+}
+
+.compact-position-btn {
+  border: none;
+  background: #10b981;
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.compact-position-btn:hover {
+  background: #059669;
+  transform: scale(1.02);
+}
+
+@media (max-width: 900px) {
+  .container { flex-direction: column; width: 100%; }
+  .sidebar { width: 100%; }
+  .main { padding: 18px; }
+  .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+  .quick-position-bar { display: none; }
+  .quick-position-room { display: none; }
+  .profile { align-self: flex-end; }
+  .profile-shell { grid-template-columns: 1fr; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .object-detail-grid { grid-template-columns: 1fr; }
+  .object-sheet-head { flex-direction: column; }
+  .user-locator-grid { grid-template-columns: 1fr; }
+  .user-search-row { align-items: stretch; }
+  .user-search-left { flex-direction: column; align-items: stretch; }
+  .user-search-right { justify-content: space-between; }
+}
+</style>
+  <link rel="stylesheet" href="theme.css">
+  <script data-theme-role-script>
+    (function () {
+      var path = (window.location.pathname.split('/').pop() || '').toLowerCase();
+      var page = path.replace('.html', '') || 'home';
+      document.documentElement.setAttribute('data-page', page);
+
+      var role = (localStorage.getItem('userRole') || '').toLowerCase();
+      if (!role) {
+        if (page.indexOf('admin') >= 0 || ['index','ajouter-objet','objets','localisations','parametres'].indexOf(page) >= 0) {
+          role = 'admin';
+        } else if (page.indexOf('user') >= 0 || ['user','mesobjet','localisations-user','parametres-user'].indexOf(page) >= 0) {
+          role = 'user';
+        } else {
+          role = 'guest';
+        }
+      }
+      document.documentElement.setAttribute('data-role', role);
+    })();
+  </script></head>
+<body>
+<div class="container">
+  <script src="sidebar-loader.js?v=20260501-favorites-fix2"></script>
+
+  <div class="main">
+    <div class="user-top-area">
+      <section class="user-locator-panel">
+        <div class="user-locator-grid">
+          <div class="user-locator-field">
+            <label for="quickFloorSelectCompact" class="user-locator-label">Etage</label>
+            <select id="quickFloorSelectCompact" class="user-locator-select"></select>
+          </div>
+          <div class="user-locator-field">
+            <label for="quickRoomSelectCompact" class="user-locator-label">Salle</label>
+            <select id="quickRoomSelectCompact" class="user-locator-select"></select>
+          </div>
+          <button type="button" id="quickSetPositionBtnCompact" class="user-locator-btn">
+            <i class="fas fa-location-dot"></i>
+            Je suis ici
+          </button>
+          <a href="localisations-user.html" class="user-locator-btn ghost" id="openUserMapBtn" onclick="window.location.href='localisations-user.html'">
+            <i class="fas fa-map"></i>
+            Consulter le plan
+          </a>
+        </div>
+      </section>
+
+      <div class="user-search-row">
+        <div class="user-search-left">
+          <div class="user-current-pos" aria-live="polite">
+            <i class="fas fa-street-view"></i>
+            <span>Ma Position :</span>
+            <strong id="userCurrentPos">-</strong>
+          </div>
+        </div>
+        <div class="user-search-right">
+          <input id="mainSearch" class="search user-search-input" type="search" placeholder="Rechercher un objet..." data-key="search_objects" data-attr="placeholder" aria-label="Rechercher un objet">
+        </div>
+      </div>
+    </div>
+
+    <div id="userQuickFilters" class="user-quick-filters" aria-label="Filtrer par type d'objet">
+      <button type="button" class="filter-chip is-active" data-quick-query="">Tout</button>
+    </div>
+
+    <div class="table-box dashboard-table" id="objectsSection">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" data-key="table_name">Nom</th>
+            <th scope="col" data-key="table_type">Type</th>
+            <th scope="col">Salle</th>
+            <th scope="col">Etage</th>
+            <th scope="col">Statut</th>
+          </tr>
+        </thead>
+        <tbody id="objectsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay-modal" id="infoOverlay" hidden aria-hidden="true">
+  <div class="overlay-backdrop" id="overlayBackdrop"></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+    <div class="overlay-header">
+      <h3 class="overlay-title" id="overlayTitle">Details</h3>
+      <button class="overlay-close" id="overlayClose" type="button" aria-label="Fermer">x</button>
+    </div>
+    <div class="overlay-body" id="overlayBody"></div>
+  </div>
+</div>
+
+<div class="app-toast" id="appToast" role="status" aria-live="polite" aria-atomic="true">
+  <div class="app-toast-thumb">
+    <img src="intellibuild-mark.svg" alt="IntelliBuild">
+  </div>
+  <div class="app-toast-copy">
+    <p class="app-toast-title" id="appToastTitle">Notification</p>
+    <p class="app-toast-text" id="appToastText">Operation terminee</p>
+  </div>
+</div>
+
+<script src="translations.js"></script>
+<script>
+const profileButton = document.getElementById("profileButton");
+const menu = document.getElementById("menu");
+const menuName = document.getElementById("menuName");
+const openProfileOverlay = document.getElementById("openProfileOverlay");
+const logoutLink = document.getElementById("logoutLink");
+const langSelect = document.getElementById("langSelect");
+const langNote = document.querySelector(".lang-note");
+const objectsBody = document.getElementById("objectsBody");
+const mainSearch = document.getElementById("mainSearch");
+const objectsSection = document.getElementById("objectsSection");
+const openHistoryOverlay = document.getElementById("openHistoryOverlay");
+const openFavoritesOverlay = document.getElementById("openFavoritesOverlay");
+const openReportsOverlay = document.getElementById("openReportsOverlay");
+const infoOverlay = document.getElementById("infoOverlay");
+const overlayBackdrop = document.getElementById("overlayBackdrop");
+const overlayClose = document.getElementById("overlayClose");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayBody = document.getElementById("overlayBody");
+const appToast = document.getElementById("appToast");
+const appToastTitle = document.getElementById("appToastTitle");
+const appToastText = document.getElementById("appToastText");
+const userCurrentPos = document.getElementById("userCurrentPos");
+const quickFloorSelectUser = document.getElementById("quickFloorSelectCompact");
+const quickRoomSelectUser = document.getElementById("quickRoomSelectCompact");
+const quickSetPositionBtnUser = document.getElementById("quickSetPositionBtnCompact");
+const quickPositionCurrentRoom = document.getElementById("quickPositionCurrentRoom") || document.createElement("div");
+const apiBase = window.APP_CONFIG.API_BASE;
+const userToken = localStorage.getItem("userToken");
+let appToastTimer = null;
+const PROFILE_NAME_KEY = "userDisplayName";
+const NEARBY_NOTIFY_CACHE_KEY = "nearbyThingNotificationCache";
+let historyEntries = [];
+let selectedObjectDetails = null;
+let userProfileData = null;
+let roomCoordsCache = {};
+let layoutFloorsCache = [];
+const objectDetailsCache = new Map();
+let userFavorites = [];
+try {
+  if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.getFavoritesRaw === "function") {
+    userFavorites = window.__ibFavoritesStore.getFavoritesRaw();
+  } else {
+    userFavorites = JSON.parse(localStorage.getItem("userFavorites") || "[]");
+  }
+} catch (error) {
+  userFavorites = [];
+}
+let userReports = JSON.parse(localStorage.getItem("userReports") || "[]");
+let userThingsAutoRefreshTimer = null;
+let userObjectTypeFilters = [];
+let activeQuickFilterQuery = "";
+
+if (!userToken) window.location.href = "login.html";
+
+window.addEventListener("app:favorites-changed", function (event) {
+  if (event && event.detail && Array.isArray(event.detail.favorites)) {
+    userFavorites = event.detail.favorites;
+  }
+});
+
+function tr(key, fallback) {
+  const locale = (localStorage.getItem("lang") || "fr").toLowerCase();
+  if (typeof translations !== "undefined" && translations[locale] && translations[locale][key] !== undefined) {
+    return translations[locale][key];
+  }
+  return fallback;
+}
+
+function getAuthHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${userToken}`
+  };
+}
+
+function normalizeRoom(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function isMeaningfulRoom(room) {
+  const normalized = normalizeRoom(room);
+  if (!normalized) return false;
+  return !["non definie", "non definiee", "salle inconnue", "-", "unknown"].includes(normalized);
+}
+
+const ROOM_ALIASES_LOCAL = {
+  "archives dir.": "Archives Direction E4",
+  "archives dir": "Archives Direction E4",
+  "archives executif": "Archives Direction E10",
+  "archives 5": "Archives E5",
+  "archives": "Archives E2",
+  "presse": "Salle de Presse E2",
+  "salle de presse": "Salle de Presse E2",
+  "salle du presse": "Salle de Presse E2"
+};
+
+function canonicalRoomFromCache(room) {
+  const raw = String(room || "").trim();
+  if (!raw) return "";
+  const normalized = normalizeRoom(raw);
+
+  for (const name of Object.keys(roomCoordsCache || {})) {
+    if (normalizeRoom(name) === normalized) {
+      return name;
+    }
+  }
+
+  const alias = ROOM_ALIASES_LOCAL[normalized];
+  if (alias) {
+    for (const name of Object.keys(roomCoordsCache || {})) {
+      if (normalizeRoom(name) === normalizeRoom(alias)) {
+        return name;
+      }
+    }
+    return alias;
+  }
+
+  return raw;
+}
+
+function getCoordsFromCache(room) {
+  if (!room || !roomCoordsCache) return null;
+  const normalized = normalizeRoom(room);
+  for (const [name, coords] of Object.entries(roomCoordsCache)) {
+    if (normalizeRoom(name) === normalized) {
+      return {
+        x: Number(coords?.x || 0),
+        y: Number(coords?.y || 0),
+        z: Number(coords?.z || 0)
+      };
+    }
+  }
+  return null;
+}
+
+function findRoomByCoords(coords) {
+  if (!hasUsableCoords(coords) || !roomCoordsCache || !Object.keys(roomCoordsCache).length) return "";
+
+  const targetX = Number(coords.x);
+  const targetY = Number(coords.y);
+  const targetZ = Number(coords.z);
+  let closestRoom = "";
+  let closestDistance = Infinity;
+
+  for (const [name, roomCoords] of Object.entries(roomCoordsCache)) {
+    const candidate = {
+      x: Number(roomCoords?.x || 0),
+      y: Number(roomCoords?.y || 0),
+      z: Number(roomCoords?.z || 0)
+    };
+    if (!hasUsableCoords(candidate)) continue;
+
+    const delta = Math.sqrt(
+      ((targetX - candidate.x) ** 2) +
+      ((targetY - candidate.y) ** 2) +
+      ((targetZ - candidate.z) ** 2)
+    );
+
+    if (delta < closestDistance) {
+      closestDistance = delta;
+      closestRoom = String(name || "").trim();
+    }
+  }
+
+  return closestDistance <= 0.01 ? closestRoom : "";
+}
+
+function hasUsableCoords(coords) {
+  if (!coords || typeof coords !== "object") return false;
+  const x = Number(coords.x);
+  const y = Number(coords.y);
+  const z = Number(coords.z);
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return false;
+  return !(x === 0 && y === 0 && z === 0);
+}
+
+function getCoordsFromLocation(location) {
+  if (!location || typeof location !== "object") return null;
+  const coords = {
+    x: Number(location.x || 0),
+    y: Number(location.y || 0),
+    z: Number(location.z || 0)
+  };
+  return hasUsableCoords(coords) ? coords : null;
+}
+
+function computeFallbackDistance(fromCoords, toCoords) {
+  if (!hasUsableCoords(fromCoords) || !hasUsableCoords(toCoords)) return NaN;
+  return Math.sqrt(
+    ((Number(fromCoords.x) - Number(toCoords.x)) ** 2) +
+    ((Number(fromCoords.y) - Number(toCoords.y)) ** 2) +
+    ((Number(fromCoords.z) - Number(toCoords.z)) ** 2)
+  );
+}
+
+function hasDefinedUserPosition(room, coords) {
+  return isMeaningfulRoom(room) || hasUsableCoords(coords);
+}
+
+async function loadRoomCoords() {
+  if (Object.keys(roomCoordsCache).length) return;
+  try {
+    const response = await fetch(`${apiBase}/localisation/layout`, { method: "GET" });
+    if (!response.ok) return;
+    const data = await response.json();
+    roomCoordsCache = (data && data.room_coords && typeof data.room_coords === "object") ? data.room_coords : {};
+  } catch (error) {
+    console.error("Erreur chargement salles:", error);
+    roomCoordsCache = {};
+  }
+}
+
+async function loadLayoutFloors() {
+  if (Array.isArray(layoutFloorsCache) && layoutFloorsCache.length) return;
+  try {
+    const response = await fetch(`${apiBase}/localisation/layout`, { method: "GET" });
+    if (!response.ok) {
+      layoutFloorsCache = [];
+      return;
+    }
+    const data = await response.json();
+    const floors = Array.isArray(data?.floors) ? data.floors : [];
+    layoutFloorsCache = floors.map((floor) => ({
+      id: Number(floor?.id),
+      name: String(floor?.name || `Etage ${floor?.id ?? "?"}`),
+      rooms: Array.isArray(floor?.rooms) ? floor.rooms.map((room) => String(room || "").trim()).filter(Boolean) : []
+    })).filter((floor) => Number.isFinite(floor.id));
+  } catch (error) {
+    console.error("Erreur chargement etages:", error);
+    layoutFloorsCache = [];
+  }
+}
+
+function findFloorByRoom(roomName) {
+  const normalizedRoom = normalizeRoom(roomName);
+  if (!normalizedRoom || !Array.isArray(layoutFloorsCache)) return null;
+  for (const floor of layoutFloorsCache) {
+    if (!Array.isArray(floor.rooms)) continue;
+    const found = floor.rooms.some((room) => normalizeRoom(room) === normalizedRoom);
+    if (found) return floor;
+  }
+  return null;
+}
+
+function renderQuickRoomOptions(preferredRoom) {
+  if (!quickFloorSelectUser || !quickRoomSelectUser || !layoutFloorsCache.length) return;
+  const selectedFloorId = Number(quickFloorSelectUser.value);
+  const selectedFloor = layoutFloorsCache.find((floor) => floor.id === selectedFloorId) || layoutFloorsCache[0];
+  if (!selectedFloor) {
+    quickRoomSelectUser.innerHTML = '<option value="">Aucune salle</option>';
+    return;
+  }
+
+  const preferred = canonicalRoomFromCache(preferredRoom) || String(preferredRoom || "").trim();
+  quickRoomSelectUser.innerHTML = selectedFloor.rooms.map((room) => {
+    const selected = normalizeRoom(room) === normalizeRoom(preferred) ? "selected" : "";
+    return `<option value="${sanitizeText(room)}" ${selected}>${sanitizeText(room)}</option>`;
+  }).join("");
+}
+
+function renderQuickPositionSelectors(currentRoom) {
+  if (!quickFloorSelectUser || !quickRoomSelectUser) return;
+  if (!layoutFloorsCache.length) {
+    quickFloorSelectUser.innerHTML = '<option value="">Etages indisponibles</option>';
+    quickRoomSelectUser.innerHTML = '<option value="">Salles indisponibles</option>';
+    if (quickSetPositionBtnUser) quickSetPositionBtnUser.disabled = true;
+    return;
+  }
+
+  quickFloorSelectUser.innerHTML = layoutFloorsCache.map((floor) => (
+    `<option value="${floor.id}">${sanitizeText(floor.name)}</option>`
+  )).join("");
+
+  const canonicalCurrentRoom = canonicalRoomFromCache(currentRoom) || currentRoom;
+  const matchedFloor = findFloorByRoom(canonicalCurrentRoom) || layoutFloorsCache[0];
+  quickFloorSelectUser.value = String(matchedFloor.id);
+  renderQuickRoomOptions(canonicalCurrentRoom);
+  if (quickSetPositionBtnUser) quickSetPositionBtnUser.disabled = false;
+}
+
+function persistQuickUserSelection(syncBackend) {
+  if (!quickRoomSelectUser) return;
+
+  const selectedRoomRaw = String(quickRoomSelectUser.value || "").trim();
+  if (!selectedRoomRaw) return;
+
+  const selectedRoom = canonicalRoomFromCache(selectedRoomRaw) || selectedRoomRaw;
+  const selectedCoords = getCoordsFromCache(selectedRoom) || { x: 0, y: 0, z: 0 };
+
+  localStorage.setItem("user_room", selectedRoom);
+  localStorage.setItem("user_x", String(Number(selectedCoords.x || 0)));
+  localStorage.setItem("user_y", String(Number(selectedCoords.y || 0)));
+  localStorage.setItem("user_z", String(Number(selectedCoords.z || 0)));
+
+  if (userCurrentPos) {
+    userCurrentPos.textContent = selectedRoom;
+  }
+  if (quickPositionCurrentRoom) {
+    quickPositionCurrentRoom.textContent = selectedRoom;
+  }
+
+  if (syncBackend) {
+    fetch(`${apiBase}/user-localisation`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        room: selectedRoom,
+        x: Number(selectedCoords.x || 0),
+        y: Number(selectedCoords.y || 0),
+        z: Number(selectedCoords.z || 0)
+      })
+    }).catch(function (error) {
+      console.error("Erreur reseau localisation:", error);
+    });
+  }
+
+  return { room: selectedRoom, coords: selectedCoords };
+}
+
+async function applyQuickUserPosition() {
+  const persistedSelection = persistQuickUserSelection(true);
+  if (!persistedSelection) {
+    showAppToast("Veuillez choisir une salle.", "error", "Position");
+    return;
+  }
+  const selectedRoom = persistedSelection.room;
+  showAppToast(`Position mise a jour: ${selectedRoom}`, "success", "Position");
+  await loadUserThings(String(activeQuickFilterQuery || (mainSearch ? mainSearch.value : "") || ""));
+}
+
+function initQuickPositionBar() {
+  if (!quickFloorSelectUser || !quickRoomSelectUser || !quickSetPositionBtnUser) return;
+
+  quickFloorSelectUser.addEventListener("change", function () {
+    renderQuickRoomOptions("");
+    persistQuickUserSelection(false);
+  });
+
+  quickRoomSelectUser.addEventListener("change", function () {
+    persistQuickUserSelection(false);
+  });
+
+  quickSetPositionBtnUser.addEventListener("click", function () {
+    applyQuickUserPosition();
+  });
+
+  const openUserMapBtn = document.getElementById("openUserMapBtn");
+  if (openUserMapBtn) {
+    openUserMapBtn.addEventListener("click", function () {
+      persistQuickUserSelection(false);
+    });
+  }
+}
+
+initQuickPositionBar();
+
+// Filter system functions
+function extractTypeFilters(list) {
+  const labelsByKey = new Map();
+  list.forEach(function (item) {
+    const typeLabel = String(item && (item.type || item['@type']) ? (item.type || item['@type']) : '').trim();
+    const typeKey = normalizeText(typeLabel);
+    if (!typeKey || labelsByKey.has(typeKey)) return;
+    labelsByKey.set(typeKey, typeLabel);
+  });
+  return Array.from(labelsByKey.values()).sort(function (a, b) {
+    return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+  });
+}
+
+function renderQuickFilters() {
+  const userQuickFilters = document.getElementById('userQuickFilters');
+  if (!userQuickFilters) return;
+
+  const activeQuery = String(activeQuickFilterQuery || (mainSearch ? mainSearch.value : '') || '');
+  const buttons = [{ label: 'Tout', query: '' }].concat(
+    userObjectTypeFilters.map(function (label) {
+      return { label: label, query: label };
+    })
+  );
+
+  userQuickFilters.innerHTML = buttons.map(function (button) {
+    return `<button type="button" class="filter-chip" data-quick-query="${escapeHtml(button.query)}">${escapeHtml(button.label)}</button>`;
+  }).join('');
+
+  setActiveFilterChip(activeQuery);
+}
+
+function syncQuickFilters(list, query) {
+  const discoveredTypes = extractTypeFilters(list);
+  if (!userObjectTypeFilters.length || !String(query || '').trim()) {
+    userObjectTypeFilters = discoveredTypes;
+  } else {
+    const known = new Map(userObjectTypeFilters.map(function (label) {
+      return [normalizeText(label), label];
+    }));
+    discoveredTypes.forEach(function (label) {
+      const key = normalizeText(label);
+      if (!known.has(key)) {
+        known.set(key, label);
+        userObjectTypeFilters.push(label);
+      }
+    });
+    userObjectTypeFilters.sort(function (a, b) {
+      return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+    });
+  }
+  renderQuickFilters();
+}
+
+function setActiveFilterChip(query) {
+  const normalizedQuery = normalizeText(query);
+  const userQuickFilters = document.getElementById('userQuickFilters');
+  if (!userQuickFilters) return;
+  const quickFilterButtons = Array.from(userQuickFilters.querySelectorAll('[data-quick-query]'));
+  quickFilterButtons.forEach(function (button) {
+    const candidate = normalizeText(button.getAttribute('data-quick-query') || '');
+    button.classList.toggle('is-active', candidate === normalizedQuery);
+  });
+}
+
+
+function toStatusCode(statusValue) {
+  const raw = String(statusValue || "").toLowerCase().trim();
+  if (["active", "actif", "disponible"].includes(raw)) return "active";
+  if (["in_use", "in use", "en utilisation", "utilise", "utilisé", "pris", "taken", "borrowed", "occupied", "occupe", "occupé"].includes(raw)) return "in_use";
+  if (["en panne", "panne", "broken", "out of order", "out_of_order"].includes(raw)) return "broken";
+  if (["inactive", "inactif", "hors-ligne", "hors ligne", "indisponible", "non disponible", "unavailable"].includes(raw)) return "inactive";
+  return "inactive";
+}
+
+function getObjectStatusSource(item) {
+  if (!item || typeof item !== "object") return "";
+  const maintenanceState = String(item.maintenance_state || item.maintenanceState || "").trim();
+  if (maintenanceState) return maintenanceState;
+  const explicitStatus = String(item.status || "").trim();
+  if (explicitStatus) return explicitStatus;
+  return String(item.availability || "").trim();
+}
+
+function getStatusLabel(statusCode) {
+  if (statusCode === "active") return tr("status_active_label", "Actif");
+  if (statusCode === "in_use") return "En utilisation";
+  if (statusCode === "broken") return tr("status_broken_label", "En panne");
+  return tr("status_inactive_label", "Inactif");
+}
+
+function syncObjectStatusState(objId, thing) {
+  const objectId = String(decodeHtmlEntities(objId) || thing?.id || thing?._id || "").trim();
+  if (!objectId) return "inactive";
+
+  const existing = objectDetailsCache.get(objectId) || {};
+  const locationValue = thing && typeof thing.location === "object"
+    ? String(thing.location.room || thing.location.name || existing.location || "-")
+    : String((thing && thing.location) || existing.location || "-");
+  const statusCode = toStatusCode(getObjectStatusSource(thing));
+  const nextDetails = {
+    ...existing,
+    id: objectId,
+    name: String((thing && thing.name) || existing.name || "Objet"),
+    type: String((thing && (thing.type || thing["@type"])) || existing.type || "-"),
+    location: locationValue,
+    description: String((thing && thing.description) || existing.description || "Aucune description disponible."),
+    maintenanceState: String((thing && (thing.maintenance_state || thing.maintenanceState)) || existing.maintenanceState || "").trim(),
+    statusCode: statusCode,
+    statusText: getStatusLabel(statusCode)
+  };
+
+  objectDetailsCache.set(objectId, nextDetails);
+
+  if (selectedObjectDetails && String(selectedObjectDetails.id || "").trim() === objectId) {
+    selectedObjectDetails = {
+      ...selectedObjectDetails,
+      ...nextDetails
+    };
+  }
+
+  objectsBody.querySelectorAll(".object-row").forEach((row) => {
+    if (String(row.dataset.objId || "").trim() === objectId) {
+      row.dataset.objStatus = statusCode;
+    }
+  });
+
+  return statusCode;
+}
+
+async function getLiveObjectStatusCode(objId, fallbackStatusCode) {
+  const safeObjectId = String(decodeHtmlEntities(objId) || objId || "").trim();
+  if (!safeObjectId) return fallbackStatusCode || "inactive";
+
+  try {
+    const response = await fetch(`${apiBase}/things/${encodeURIComponent(safeObjectId)}`, {
+      method: "GET",
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) {
+      return fallbackStatusCode || "inactive";
+    }
+
+    const thing = await response.json();
+    return syncObjectStatusState(safeObjectId, thing);
+  } catch (error) {
+    console.error("Erreur vérification statut:", error);
+    return fallbackStatusCode || "inactive";
+  }
+}
+
+async function postToFirstAvailableEndpoint(paths, headers, bodyPayload) {
+  let lastResponse = null;
+  for (const path of paths) {
+    const requestInit = {
+      method: "POST",
+      headers
+    };
+    if (bodyPayload !== undefined) {
+      requestInit.body = JSON.stringify(bodyPayload);
+    }
+
+    const response = await fetch(`${apiBase}${path}`, {
+      ...requestInit
+    });
+
+    if (response.status !== 404) {
+      return response;
+    }
+
+    lastResponse = response;
+  }
+  return lastResponse;
+}
+
+function formatDateTimeLocalValue(dateValue) {
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function reopenSelectedObjectOverlay() {
+  if (!selectedObjectDetails?.id) return;
+  const row = Array.from(objectsBody.querySelectorAll(".object-row")).find(function (candidate) {
+    return String(candidate.dataset.objId || "").trim() === String(selectedObjectDetails.id || "").trim();
+  });
+  if (row) {
+    openObjectDecision(row);
+  }
+}
+
+function buildBorrowRequestPayload() {
+  const customInput = document.getElementById("borrowCustomDatetime");
+  const customValue = String(customInput?.value || "").trim();
+  if (customValue) {
+    const customDate = new Date(customValue);
+    if (Number.isNaN(customDate.getTime())) {
+      showAppToast("La date de retour choisie est invalide.", "error", "Validation");
+      return null;
+    }
+    if ((customDate.getTime() - Date.now()) < 1 * 60 * 1000) {
+      showAppToast("Choisissez une date de retour au moins 1 minute dans le futur.", "error", "Validation");
+      return null;
+    }
+    return {
+      planned_return_at: customDate.toISOString()
+    };
+  }
+
+  const hoursInput = document.getElementById("borrowDurationHours");
+  const minutesInput = document.getElementById("borrowDurationMinutes");
+  const hours = Number(hoursInput?.value || 0);
+  const minutes = Number(minutesInput?.value || 0);
+  if (!Number.isFinite(hours) || hours < 0 || !Number.isFinite(minutes) || minutes < 0) {
+    showAppToast("Choisissez une duree valide pour l'emprunt.", "error", "Validation");
+    return null;
+  }
+  if (minutes >= 60) {
+    showAppToast("Les minutes doivent etre entre 0 et 59.", "error", "Validation");
+    return null;
+  }
+  const durationMinutes = (Math.trunc(hours) * 60) + Math.trunc(minutes);
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 1) {
+    showAppToast("Choisissez au moins 1 minute pour l'emprunt.", "error", "Validation");
+    return null;
+  }
+  if (durationMinutes > 43200) {
+    showAppToast("La duree maximale est de 30 jours.", "error", "Validation");
+    return null;
+  }
+
+  return {
+    duration_minutes: durationMinutes
+  };
+}
+
+function openBorrowPlanningOverlay() {
+  if (!selectedObjectDetails?.id) return;
+
+  openOverlay(
+    "Planifier l'emprunt",
+    `
+      <div class="object-sheet">
+        <div class="object-sheet-head">
+          <div>
+            <span class="hero-kicker">Emprunt</span>
+            <h4 class="object-sheet-title">${sanitizeText(selectedObjectDetails.name || "Objet")}</h4>
+            <p class="object-sheet-sub">Choisissez librement une duree en heures et minutes, ou definissez une date et heure de retour.</p>
+          </div>
+          <span class="object-status-pill active">Disponible</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Duree libre</span>
+          <div class="detail-value" style="display:grid;gap:10px;">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+              <label style="display:grid;gap:6px;min-width:120px;">
+                <span style="font-size:13px;color:#475569;font-weight:700;">Heures</span>
+                <input id="borrowDurationHours" type="number" min="0" max="720" step="1" value="2" inputmode="numeric" style="padding:11px 13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;">
+              </label>
+              <label style="display:grid;gap:6px;min-width:120px;">
+                <span style="font-size:13px;color:#475569;font-weight:700;">Minutes</span>
+                <input id="borrowDurationMinutes" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" style="padding:11px 13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;">
+              </label>
+            </div>
+            <p style="margin:0;color:#64748b;font-size:13px;">Exemple: 4 heures 30 minutes, 5 heures, ou 0 heure 45 minutes.</p>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Date precise</span>
+          <div class="detail-value" style="display:grid;gap:8px;">
+            <input id="borrowCustomDatetime" type="datetime-local" style="padding:11px 13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;max-width:320px;">
+            <p style="margin:0;color:#64748b;font-size:13px;">Si vous renseignez une date ici, elle sera prioritaire sur la duree libre.</p>
+          </div>
+        </div>
+
+        <div class="object-action-box">
+          <strong>Confirmation de la prise</strong>
+          <p>Nous enregistrerons votre duree prevue et l'admin pourra la voir.</p>
+          <div class="object-action-row">
+            <button type="button" onclick="confirmTakeSelectedObject()" class="object-action-btn primary" style="background:linear-gradient(135deg,#0f766e,#0ea5a4);color:#fff;">
+              <i class="fas fa-calendar-check" style="margin-right: 6px;"></i>Confirmer la prise
+            </button>
+            <button type="button" onclick="reopenSelectedObjectOverlay()" class="object-action-btn light" style="border:1px solid #cbd5e1;">
+              Retour à l'objet
+            </button>
+            <button type="button" onclick="closeOverlay()" class="object-action-btn light">Annuler</button>
+          </div>
+        </div>
+      </div>
+    `
+  );
+
+  const customInput = document.getElementById("borrowCustomDatetime");
+  if (customInput) {
+    customInput.min = formatDateTimeLocalValue(new Date(Date.now() + 1 * 60 * 1000));
+  }
+}
+
+function toggleMenu() {
+  if (!menu || !profileButton) return;
+  const isOpen = menu.classList.toggle("open");
+  profileButton.setAttribute("aria-expanded", String(isOpen));
+}
+function closeMenu() {
+  if (!menu || !profileButton) return;
+  menu.classList.remove("open");
+  profileButton.setAttribute("aria-expanded", "false");
+}
+function openOverlay(title, htmlContent) {
+  overlayTitle.textContent = title;
+  overlayBody.innerHTML = htmlContent;
+  infoOverlay.hidden = false;
+  infoOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  overlayClose.focus();
+}
+function closeOverlay() {
+  infoOverlay.hidden = true;
+  infoOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function showAppToast(message, type = "info", title) {
+  if (!appToast || !appToastText || !appToastTitle) return;
+  if (appToastTimer) {
+    clearTimeout(appToastTimer);
+    appToastTimer = null;
+  }
+  appToast.classList.remove("success", "error", "info", "show");
+  appToast.classList.add(type);
+  appToastTitle.textContent = title || (type === "error" ? "Erreur" : (type === "success" ? "Succes" : "Information"));
+  appToastText.textContent = String(message || "Operation terminee");
+  appToast.classList.add("show");
+
+  appToastTimer = setTimeout(function () {
+    appToast.classList.remove("show");
+  }, 2600);
+}
+
+function scopedKey(base, userId) {
+  return `${base}:${String(userId || "anonymous")}`;
+}
+
+function getCurrentUserId() {
+  return String((userProfileData && userProfileData.id) || localStorage.getItem("userId") || "").trim();
+}
+
+function getDisplayNameFromStorage() {
+  const uid = getCurrentUserId();
+  const scoped = String(localStorage.getItem(scopedKey(PROFILE_NAME_KEY, uid)) || "").trim();
+  if (scoped) return scoped;
+  return String(localStorage.getItem(PROFILE_NAME_KEY) || "").trim();
+}
+
+function applyDisplayName(displayName) {
+  const safe = String(displayName || "").trim();
+  if (!safe) return;
+  if (menuName) menuName.textContent = safe;
+  if (profileButton) profileButton.textContent = (safe[0] || "U").toUpperCase();
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, function (ch) {
+    if (ch === '&') return '&amp;';
+    if (ch === '<') return '&lt;';
+    if (ch === '>') return '&gt;';
+    if (ch === '"') return '&quot;';
+    return '&#39;';
+  });
+}
+
+function sanitizeText(value) {
+  return String(value || "").replace(/[&<>"]/g, function (ch) {
+    if (ch === "&") return "&amp;";
+    if (ch === "<") return "&lt;";
+    if (ch === ">") return "&gt;";
+    return "&quot;";
+  });
+}
+
+function decodeHtmlEntities(value) {
+  return String(value || "")
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .trim();
+}
+
+function getSafeEntryName(entry, fallback = "Objet sans nom") {
+  const directName = decodeHtmlEntities(entry && entry.name);
+  if (directName) return directName;
+  const fromId = decodeHtmlEntities(entry && entry.id);
+  if (fromId) return `Objet ${fromId}`;
+  return fallback;
+}
+
+function getCurrentReporterInfo() {
+  const userId = String((userProfileData && userProfileData.id) || localStorage.getItem("userId") || "").trim();
+  const email = String((userProfileData && userProfileData.email) || localStorage.getItem("userEmail") || "").trim();
+  const name = String(getDisplayNameFromStorage() || localStorage.getItem(PROFILE_NAME_KEY) || "").trim();
+  return {
+    reporterId: userId,
+    reporterEmail: email,
+    reporterName: name
+  };
+}
+
+function normalizeStoredCollections() {
+  userFavorites = (Array.isArray(userFavorites) ? userFavorites : []).map((item) => ({
+    id: String((item && item.id) || "").trim(),
+    name: getSafeEntryName(item),
+    addedAt: (item && item.addedAt) || new Date().toISOString()
+  })).filter((item) => item.id);
+
+  const reporter = getCurrentReporterInfo();
+
+  userReports = (Array.isArray(userReports) ? userReports : []).map((item) => ({
+    id: String((item && item.id) || "").trim(),
+    name: getSafeEntryName(item),
+    type: String((item && item.type) || "Non spécifié").trim() || "Non spécifié",
+    objectType: String((item && item.objectType) || "").trim(),
+    description: String((item && item.description) || "Description non fournie").trim() || "Description non fournie",
+    reportedAt: (item && item.reportedAt) || new Date().toISOString(),
+    status: String((item && item.status) || "En attente").trim() || "En attente",
+    reporterName: String((item && item.reporterName) || "").trim() || reporter.reporterName,
+    reporterEmail: String((item && item.reporterEmail) || "").trim() || reporter.reporterEmail,
+    reporterId: String((item && item.reporterId) || "").trim() || reporter.reporterId,
+    location: String((item && (item.location || item.position)) || "").trim(),
+    position: String((item && (item.position || item.location)) || "").trim(),
+    targetMode: String((item && item.targetMode) || "").trim(),
+    source: String((item && item.source) || "").trim()
+  })).filter((item) => item.id);
+
+  if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.setFavorites === "function") {
+    window.__ibFavoritesStore.setFavorites(userFavorites);
+  } else {
+    localStorage.setItem("userFavorites", JSON.stringify(userFavorites));
+  }
+  localStorage.setItem("userReports", JSON.stringify(userReports));
+}
+
+function formatHumanDate(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+async function loadUserProfile() {
+  try {
+    const response = await fetch(`${apiBase}/user/profile`, { method: "GET", headers: getAuthHeaders() });
+    if (!response.ok) return;
+    const profile = await response.json();
+    userProfileData = profile;
+
+    const profileRole = String(profile.role || "").toLowerCase();
+    if (profileRole === "admin") {
+      window.location.href = "index.html";
+      return;
+    }
+
+    const userId = String(profile.id || "").trim();
+    if (userId) {
+      localStorage.setItem("userId", userId);
+    }
+
+    const email = profile.email || localStorage.getItem("userEmail") || "user@intellibuild.com";
+    const emailName = email.split("@")[0].replace(/[._-]+/g, " ").trim();
+    const suggestedName = emailName ? emailName.replace(/\b\w/g, c => c.toUpperCase()) : "Utilisateur";
+    const apiDisplayName = String(profile.display_name || "").trim();
+    const scopedStoredName = String(localStorage.getItem(scopedKey(PROFILE_NAME_KEY, userId)) || "").trim();
+    const displayName = scopedStoredName || apiDisplayName || suggestedName;
+
+    if (!scopedStoredName && displayName) {
+      localStorage.setItem(scopedKey(PROFILE_NAME_KEY, userId), displayName);
+    }
+
+    localStorage.setItem(PROFILE_NAME_KEY, displayName);
+    localStorage.setItem("userRole", "user");
+    localStorage.setItem("userEmail", email);
+
+    // Conserver la derniere localisation connue si le backend ne renvoie rien.
+    if (profile.localisation && typeof profile.localisation === "object") {
+      const backendRoom = String(profile.localisation.room || "").trim();
+      if (backendRoom) {
+        localStorage.setItem("user_room", backendRoom);
+      }
+      if (profile.localisation.x !== undefined && profile.localisation.x !== null) {
+        localStorage.setItem("user_x", String(profile.localisation.x));
+      }
+      if (profile.localisation.y !== undefined && profile.localisation.y !== null) {
+        localStorage.setItem("user_y", String(profile.localisation.y));
+      }
+      if (profile.localisation.z !== undefined && profile.localisation.z !== null) {
+        localStorage.setItem("user_z", String(profile.localisation.z));
+      }
+    }
+
+    applyDisplayName(displayName);
+    if (window.refreshSidebarProfileCards) {
+      window.refreshSidebarProfileCards(profile);
+    }
+  } catch (error) { console.error("Erreur profil:", error); }
+}
+
+async function fetchProfileStats() {
+  let borrowedCount = 0;
+  let unreadCount = 0;
+
+  try {
+    const mesObjetsRes = await fetch(`${apiBase}/user/mes-objets`, { method: "GET", headers: getAuthHeaders() });
+    const mesObjetsData = await mesObjetsRes.json().catch(() => []);
+    borrowedCount = Array.isArray(mesObjetsData) ? mesObjetsData.length : 0;
+  } catch (error) {
+    console.error("Erreur stats objets:", error);
+  }
+
+  try {
+    const notifRes = await fetch(`${apiBase}/notifications/count`, { method: "GET", headers: getAuthHeaders() });
+    const notifData = await notifRes.json().catch(() => ({}));
+    unreadCount = Number(notifData.unread || 0);
+  } catch (error) {
+    console.error("Erreur stats notifications:", error);
+  }
+
+  return { borrowedCount, unreadCount };
+}
+
+function buildProfileOverlayHtml(profile, stats) {
+  const email = (profile && profile.email) || localStorage.getItem("userEmail") || "user@intellibuild.com";
+  const menuLabel = menuName ? menuName.textContent : "";
+  const displayName = getDisplayNameFromStorage() || menuLabel || "Utilisateur";
+  const initial = (displayName[0] || "U").toUpperCase();
+  const userRoom = localStorage.getItem("user_room") || "Non definie";
+  const memberSince = historyEntries.length ? formatHumanDate(historyEntries[historyEntries.length - 1]?.created_at) : formatHumanDate(new Date().toISOString());
+
+  return `
+    <div class="profile-shell">
+      <aside class="profile-side">
+        <div class="profile-avatar-xl">${sanitizeText(initial)}</div>
+        <p class="profile-name">${sanitizeText(displayName)}</p>
+        <p style="margin:0;opacity:.95">${sanitizeText(email)}</p>
+        <span class="profile-role">User IntelliBuild</span>
+      </aside>
+
+      <section class="profile-main">
+        <div class="profile-card">
+          <h4>Informations PFE</h4>
+          <div class="profile-grid">
+            <div class="mini-stat">
+              <p class="mini-label">Objets empruntes</p>
+              <p class="mini-value">${stats.borrowedCount}</p>
+            </div>
+            <div class="mini-stat">
+              <p class="mini-label">Notifications non lues</p>
+              <p class="mini-value">${stats.unreadCount}</p>
+            </div>
+            <div class="mini-stat">
+              <p class="mini-label">Salle active</p>
+              <p class="mini-value" style="font-size:16px">${sanitizeText(userRoom)}</p>
+            </div>
+            <div class="mini-stat">
+              <p class="mini-label">Membre depuis</p>
+              <p class="mini-value" style="font-size:16px">${sanitizeText(memberSince)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <h4>Personnaliser votre nom</h4>
+          <input id="profileDisplayNameInput" class="profile-input" type="text" maxlength="40" value="${sanitizeText(displayName)}" placeholder="Votre nom affiche">
+          <div class="profile-actions">
+            <button id="saveProfileNameBtn" class="profile-btn primary" type="button">Enregistrer le nom</button>
+            <button class="profile-btn light" type="button" onclick="window.location.href='mesobjet.html'">Voir mes objets</button>
+            <button class="profile-btn light" type="button" onclick="window.location.href='notifications-user.html'">Voir notifications</button>
+            <button id="logoutFromProfileBtn" class="profile-btn warn" type="button">Deconnexion</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function buildHistoryOverlayHtml() {
+  if (!historyEntries.length) {
+    return "<p>Aucune activite recente pour votre compte.</p>";
+  }
+
+  const rows = historyEntries.slice(0, 80).map(function (entry) {
+    const status = String(entry.status || "-");
+    const badgeClass = status.toLowerCase().includes("succes")
+      ? "background:#dcfce7;color:#166534;"
+      : "background:#fee2e2;color:#b91c1c;";
+
+    return `
+      <tr>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;white-space:nowrap;color:#475569;">${sanitizeText(entry.date || formatHumanDate(entry.created_at) || "-")}</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f172a;">${sanitizeText(entry.action || "-")}</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#334155;max-width:420px;overflow:hidden;text-overflow:ellipsis;">${sanitizeText(entry.detail || "-")}</td>
+        <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><span style="display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;${badgeClass}">${sanitizeText(status)}</span></td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #cbd5e1;font-size:12px;color:#64748b;text-transform:uppercase;">Date</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #cbd5e1;font-size:12px;color:#64748b;text-transform:uppercase;">Action</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #cbd5e1;font-size:12px;color:#64748b;text-transform:uppercase;">Detail</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #cbd5e1;font-size:12px;color:#64748b;text-transform:uppercase;">Statut</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function loadUserHistory() {
+  try {
+    const response = await fetch(`${apiBase}/user/history`, { method: "GET", headers: getAuthHeaders() });
+    if (!response.ok) { historyEntries = []; return; }
+    const data = await response.json();
+    const list = Array.isArray(data) ? data : [];
+
+    // Extra safety on frontend: keep only current user's history rows.
+    const currentUserId = String((userProfileData && userProfileData.id) || localStorage.getItem("userId") || "").trim();
+    const currentEmail = String((userProfileData && userProfileData.email) || localStorage.getItem("userEmail") || "").trim().toLowerCase();
+    historyEntries = list.filter(function (entry) {
+      const entryUserId = String(entry && entry.user_id ? entry.user_id : "").trim();
+      const entryEmail = String(entry && entry.email ? entry.email : "").trim().toLowerCase();
+      if (currentUserId && entryUserId) return entryUserId === currentUserId;
+      if (currentEmail && entryEmail) return entryEmail === currentEmail;
+      return true;
+    });
+  } catch (error) {
+    console.error("Erreur historique:", error);
+    historyEntries = [];
+  }
+}
+
+async function logUserAction(action, detail, status) {
+  try {
+    await fetch(`${apiBase}/user/history`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ action, detail, status })
+    });
+  } catch (error) { console.error("Erreur log historique:", error); }
+}
+
+function shouldNotifyNearbyClient(thingId) {
+  const id = String(thingId || "").trim();
+  if (!id) return false;
+
+  try {
+    const raw = localStorage.getItem(NEARBY_NOTIFY_CACHE_KEY);
+    const cache = raw ? JSON.parse(raw) : {};
+    const now = Date.now();
+    const last = Number(cache[id] || 0);
+    if (now - last < 30 * 60 * 1000) {
+      return false;
+    }
+    cache[id] = now;
+    localStorage.setItem(NEARBY_NOTIFY_CACHE_KEY, JSON.stringify(cache));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+async function triggerNearbyNotification(list, userRoom) {
+  if (!Array.isArray(list) || !list.length || !userRoom) return;
+
+  const candidate = list.find((item) => {
+    const statusCode = toStatusCode(getObjectStatusSource(item));
+    const room = item.location?.room || item.location || "";
+    const sameRoom = Boolean(item.same_room) || (normalizeRoom(room) && normalizeRoom(room) === normalizeRoom(userRoom));
+    return statusCode === "active" && sameRoom && item.id;
+  });
+
+  if (!candidate) return;
+  if (!shouldNotifyNearbyClient(candidate.id)) return;
+
+  try {
+    await fetch(`${apiBase}/notifications/nearby-object`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        thing_id: String(candidate.id || ""),
+        thing_name: String(candidate.name || "Objet"),
+        room: String(candidate.location?.room || candidate.location || userRoom),
+        distance_m: Number(candidate.distance || 0),
+      }),
+    });
+  } catch (error) {
+    console.error("Erreur notification objet proche:", error);
+  }
+}
+
+async function loadUserThings(query) {
+  try {
+    await loadRoomCoords();
+
+    let user_x = Number(localStorage.getItem('user_x') || 0);
+    let user_y = Number(localStorage.getItem('user_y') || 0);
+    let user_z = Number(localStorage.getItem('user_z') || 0);
+    const storedUserCoords = { x: user_x, y: user_y, z: user_z };
+    const storedUserRoom = localStorage.getItem('user_room') || '';
+    let user_room = isMeaningfulRoom(storedUserRoom) ? canonicalRoomFromCache(storedUserRoom) : "";
+
+    if (!user_room && hasUsableCoords(storedUserCoords)) {
+      const inferredRoom = findRoomByCoords(storedUserCoords);
+      if (inferredRoom) {
+        user_room = inferredRoom;
+        localStorage.setItem('user_room', inferredRoom);
+      }
+    }
+
+    if (user_room && user_room !== storedUserRoom) {
+      localStorage.setItem('user_room', user_room);
+    }
+
+    if ((user_x === 0 && user_y === 0 && user_z === 0) && user_room) {
+      const fallbackUser = getCoordsFromCache(user_room);
+      if (fallbackUser) {
+        user_x = fallbackUser.x;
+        user_y = fallbackUser.y;
+        user_z = fallbackUser.z;
+      }
+    }
+
+    const response = await fetch(`${apiBase}/things/search`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        search_query: query || "",
+        user_room,
+        user_x,
+        user_y,
+        user_z
+      })
+    });
+
+    if (!response.ok) return;
+
+    const items = await response.json();
+    const list = Array.isArray(items) ? items : [];
+    // Remove objects that are in 'broken' state for user view
+    const visibleList = (list || []).filter(function(item){
+      try{ return toStatusCode(getObjectStatusSource(item)) !== 'broken'; }catch(e){ return true; }
+    });
+    // Sort: available (active) first, then in_use, then inactive
+    visibleList.sort(function(a,b){
+      const rank = function(it){ const s=toStatusCode(getObjectStatusSource(it)); if(s==='active')return 0; if(s==='in_use')return 1; return 2; };
+      return rank(a) - rank(b);
+    });
+    objectDetailsCache.clear();
+
+    const userCoords = { x: user_x, y: user_y, z: user_z };
+    const positionDefined = hasDefinedUserPosition(user_room, userCoords);
+    if (userCurrentPos) {
+      userCurrentPos.textContent = user_room || "Non definie";
+    }
+
+    objectsBody.innerHTML = visibleList.map(function (item) {
+      const objectId = String(item.id || item._id || "").trim();
+      const statusCode = toStatusCode(getObjectStatusSource(item));
+      const statusClass = statusCode === "active" ? "status-active" : "status-inactive";
+      const statusText = getStatusLabel(statusCode);
+      const itemLocation = item.location?.room || item.location || "";
+      const canonicalItemLocation = canonicalRoomFromCache(itemLocation) || itemLocation;
+      const sameRoomByName = Boolean(normalizeRoom(canonicalItemLocation)) && normalizeRoom(canonicalItemLocation) === normalizeRoom(user_room);
+      const sameRoom = Boolean(item.same_room) || sameRoomByName;
+
+      let distanceValue = Number(item.distance);
+      if (!Number.isFinite(distanceValue) || (!sameRoom && distanceValue <= 0)) {
+        const fallbackObj = getCoordsFromCache(canonicalItemLocation);
+        const objectCoords = getCoordsFromLocation(item.location) || fallbackObj;
+        const computedDistance = computeFallbackDistance(userCoords, objectCoords);
+        distanceValue = Number.isFinite(computedDistance) ? computedDistance : distanceValue;
+      }
+
+      const distanceText = sameRoom
+        ? "0m (MÊME SALLE)"
+        : (Number.isFinite(distanceValue) && distanceValue > 0
+            ? `${Math.max(1, Math.round(distanceValue))}m`
+            : (positionDefined ? "-" : "Definir ma position"));
+      const objectName = String(item.name || "Objet");
+      const objectType = String(item.type || item["@type"] || "-");
+      const objectLocation = String(canonicalItemLocation || "-");
+      const floorLabel = (findFloorByRoom(canonicalItemLocation)?.name) || "-";
+      const objectDescription = String(item.description || item.details || item.note || "Aucune description disponible.");
+      const safeObjectId = objectId.replace(/"/g, "&quot;");
+      objectDetailsCache.set(objectId, {
+        id: objectId,
+        name: objectName,
+        type: objectType,
+        location: objectLocation,
+        description: objectDescription,
+        maintenanceState: String(item.maintenance_state || item.maintenanceState || "").trim(),
+        statusCode: statusCode,
+        statusText: statusText,
+        distanceText: distanceText,
+        floorLabel: floorLabel,
+        sameRoom: sameRoom
+      });
+
+      return `
+        <tr class="object-row" tabindex="0" role="button" aria-label="Voir le detail de ${sanitizeText(objectName)}" data-obj-id="${safeObjectId}" data-obj-name="${sanitizeText(objectName)}" data-obj-status="${statusCode}">
+          <td>${sanitizeText(objectName)}</td>
+          <td>${sanitizeText(objectType)}</td>
+          <td>${sanitizeText(objectLocation)}</td>
+          <td>${sanitizeText(floorLabel)}</td>
+          <td><button type="button" class="verify-btn" onclick="event.stopPropagation(); checkAvailability('${safeObjectId}', '${sanitizeText(objectName)}', '${statusCode}')" style="border: none; background: #10b981; color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px;">Vérifier</button></td>
+        </tr>
+      `;
+    }).join("");
+
+    await triggerNearbyNotification(visibleList, user_room);
+
+    syncQuickFilters(visibleList, query);
+
+    objectsBody.querySelectorAll(".object-row").forEach((row) => {
+      row.addEventListener("click", () => openObjectDecision(row));
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openObjectDecision(row);
+        }
+      });
+    });
+
+    // Bind filter buttons event listeners
+    const userQuickFilters = document.getElementById('userQuickFilters');
+    if (userQuickFilters) {
+      userQuickFilters.querySelectorAll('[data-quick-query]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          const filterQuery = String(this.getAttribute('data-quick-query') || '').trim();
+          activeQuickFilterQuery = filterQuery;
+          setActiveFilterChip(filterQuery);
+          loadUserThings(filterQuery);
+        });
+      });
+    }
+
+    refreshStats();
+  } catch (error) {
+    console.error("Erreur objets:", error);
+  }
+}
+
+function startUserThingsAutoRefresh() {
+  if (userThingsAutoRefreshTimer) clearInterval(userThingsAutoRefreshTimer);
+  userThingsAutoRefreshTimer = setInterval(function () {
+    if (document.hidden || !infoOverlay.hidden) return;
+    loadUserThings(String(activeQuickFilterQuery || (mainSearch ? mainSearch.value : "") || ""));
+  }, 15000);
+}
+
+async function prendreObjet(objId, objName, borrowPayload) {
+  const safeObjId = String(objId || "").trim();
+  if (!safeObjId) {
+    showAppToast("Identifiant objet introuvable", "error", "Erreur");
+    return;
+  }
+  try {
+    const response = await postToFirstAvailableEndpoint(
+      [
+        `/things/${encodeURIComponent(safeObjId)}/prendre`,
+        `/take/${encodeURIComponent(safeObjId)}`
+      ],
+      getAuthHeaders(),
+      borrowPayload
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      showAppToast(data.detail || `Impossible de prendre ${objName}`, "error", "Echec de prise");
+      return;
+    }
+    
+    await logUserAction("Objet", `Prise de ${objName}`, "Succes");
+    showAppToast(`${objName} pris avec succès! Accès direct en cours...`, "success", "Objet pris");
+    
+    // Redirection automatique vers mesobjet.html pour accéder à l'objet
+    setTimeout(function() {
+      window.location.href = `mesobjet.html?thing_id=${encodeURIComponent(safeObjId)}`;
+    }, 500);
+  } catch (error) {
+    console.error("Erreur prendre:", error);
+    showAppToast("Erreur reseau", "error", "Connexion");
+  }
+}
+
+function openObjectDecision(row) {
+  const objId = row?.dataset?.objId || "";
+  const safeObjectId = String(objId || "").replace(/"/g, "&quot;");
+  
+  // Incrémenter le view_count
+  if (objId) {
+    fetch(`${apiBase}/things/${encodeURIComponent(objId)}/view`, { method: 'POST' }).catch(err => console.error('View count error:', err));
+  }
+  
+  const detail = objectDetailsCache.get(objId);
+  const objName = detail?.name || row?.dataset?.objName || "Objet";
+  const objStatus = detail?.statusCode || row?.dataset?.objStatus || "inactive";
+  if (!objId) return;
+
+  selectedObjectDetails = detail || {
+    id: objId,
+    name: objName,
+    type: "-",
+    location: "-",
+    description: "Aucune description disponible.",
+    statusCode: objStatus,
+    statusText: getStatusLabel(objStatus),
+    distanceText: "-",
+    floorLabel: "-",
+    sameRoom: false
+  };
+
+  // Vérifier si l'objet est déjà pris par l'utilisateur
+  const alreadyTaken = (userProfileData?.things_in_use || []).some(t => String(t.id || t._id) === String(objId));
+  const takenByAnother = selectedObjectDetails.statusCode === "in_use" && !alreadyTaken;
+  
+  const actionTitle = "Vérifiez d'abord le statut de l'objet.";
+  const actionCopy = "Cliquez sur Vérifier statut. Si l'objet est disponible, vous pourrez ensuite le prendre.";
+  const statusClass = "inactive";
+  
+  const proximityNote = selectedObjectDetails.sameRoom
+    ? "Objet disponible dans votre salle actuelle."
+    : `Etage: ${sanitizeText(selectedObjectDetails.floorLabel || "-")}.`;
+  
+  const safeName = sanitizeText(selectedObjectDetails.name || "Objet").replace(/'/g, "&apos;");
+  const isFavorite = userFavorites.some((f) => String(f.id) === String(objId));
+  const safeStatusCode = String(selectedObjectDetails.statusCode || "inactive").replace(/"/g, "&quot;");
+
+  openOverlay(
+    tr("detail_overlay_title", "Detail de l'objet"),
+    `
+      <div class="object-sheet">
+        <div class="object-sheet-head">
+          <div>
+            <span class="hero-kicker">Fiche objet</span>
+            <h4 class="object-sheet-title">${sanitizeText(selectedObjectDetails.name || "Objet")}</h4>
+            <p class="object-sheet-sub">${sanitizeText(proximityNote)}</p>
+          </div>
+          <span id="overlayStatusPill" class="object-status-pill ${statusClass}">À vérifier</span>
+        </div>
+
+        <div class="object-detail-grid">
+          <div class="detail-row">
+            <span class="detail-label">Nom</span>
+            <span class="detail-value">${sanitizeText(selectedObjectDetails.name || "-")}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Type</span>
+            <span class="detail-value">${sanitizeText(selectedObjectDetails.type || "-")}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Localisation</span>
+            <span class="detail-value">${sanitizeText(selectedObjectDetails.location || "-")}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Etage</span>
+            <span class="detail-value">${sanitizeText(selectedObjectDetails.floorLabel || "-")}</span>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Description</span>
+          <span class="detail-value">${sanitizeText(selectedObjectDetails.description || "Aucune description disponible.")}</span>
+        </div>
+
+        <div class="object-action-box">
+           <strong id="overlayActionTitle">${actionTitle}</strong>
+           <p id="overlayActionCopy">${actionCopy}</p>
+          <div class="object-action-row">
+             <button id="overlayVerifyBtn" type="button" onclick="verifyObjectInOverlay('${safeObjectId}', '${safeName}', '${safeStatusCode}', '${alreadyTaken ? "1" : "0"}', '${takenByAnother ? "1" : "0"}')" class="object-action-btn light" style="border: 1px solid #cbd5e1;"><i class="fas fa-search" style="margin-right: 6px;"></i>Vérifier statut</button>
+             <button id="overlayTakeBtn" type="button" disabled class="object-action-btn primary" style="background: #cbd5e1; color: #64748b; cursor: not-allowed;"><i class="fas fa-hand-holding" style="margin-right: 6px;"></i>Vérifier d'abord</button>
+             <button type="button" onclick="addToFav('${safeObjectId}', '${safeName}')" class="object-action-btn light" style="border: 1px solid #cbd5e1;"><i class="fas fa-heart" style="margin-right: 6px; ${isFavorite ? 'color: #dc2626;' : ''}"></i>${isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}</button>
+             <button type="button" onclick="closeOverlay()" class="object-action-btn light">Fermer</button>
+           </div>
+        </div>
+      </div>
+    `
+  );
+}
+
+async function verifyObjectInOverlay(objId, objName, statusCode, alreadyTakenFlag, takenByAnotherFlag) {
+  const alreadyTaken = String(alreadyTakenFlag || "0") === "1";
+  const resolvedName = decodeHtmlEntities(objName) || "Objet";
+  const currentStatusCode = await checkAvailability(objId, resolvedName, statusCode);
+  const takenByAnother = currentStatusCode === "in_use" && !alreadyTaken;
+  const isBroken = currentStatusCode === "broken";
+  const isAvailable = currentStatusCode === "active" && !alreadyTaken && !takenByAnother;
+
+  const titleEl = document.getElementById("overlayActionTitle");
+  const copyEl = document.getElementById("overlayActionCopy");
+  const takeBtn = document.getElementById("overlayTakeBtn");
+  const statusPill = document.getElementById("overlayStatusPill");
+
+  if (!takeBtn || !titleEl || !copyEl || !statusPill) return;
+
+  if (alreadyTaken) {
+    statusPill.className = "object-status-pill active";
+    statusPill.textContent = "Déjà pris (vous)";
+    titleEl.textContent = "Cet objet est en votre utilisation.";
+    copyEl.textContent = "Vous avez actuellement cet objet. Rendez-vous au point de restitution quand vous avez terminé.";
+    takeBtn.disabled = true;
+    takeBtn.style.background = "#cbd5e1";
+    takeBtn.style.color = "#64748b";
+    takeBtn.style.cursor = "not-allowed";
+    takeBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i>Déjà pris (vous)';
+    return;
+  }
+
+  if (takenByAnother || currentStatusCode === "in_use") {
+    statusPill.className = "object-status-pill inactive";
+    statusPill.textContent = "En utilisation";
+    titleEl.textContent = "Cet objet est déjà pris.";
+    copyEl.textContent = "Cet objet est actuellement en utilisation. Vous ne pouvez pas le prendre pour le moment.";
+    takeBtn.disabled = true;
+    takeBtn.style.background = "#cbd5e1";
+    takeBtn.style.color = "#64748b";
+    takeBtn.style.cursor = "not-allowed";
+    takeBtn.innerHTML = '<i class="fas fa-user-clock" style="margin-right: 6px;"></i>En utilisation';
+    return;
+  }
+
+  if (isBroken) {
+    statusPill.className = "object-status-pill inactive";
+    statusPill.textContent = "En panne";
+    titleEl.textContent = "Cet objet est en panne.";
+    copyEl.textContent = "Statut vérifié: en panne. Vous ne pouvez pas le prendre actuellement.";
+    takeBtn.disabled = true;
+    takeBtn.style.background = "#cbd5e1";
+    takeBtn.style.color = "#64748b";
+    takeBtn.style.cursor = "not-allowed";
+    takeBtn.innerHTML = '<i class="fas fa-triangle-exclamation" style="margin-right: 6px;"></i>En panne';
+    return;
+  }
+
+  if (isAvailable) {
+    statusPill.className = "object-status-pill active";
+    statusPill.textContent = "Disponible";
+    titleEl.textContent = "Voulez-vous prendre cet objet ?";
+    copyEl.textContent = "Statut vérifié: disponible. Vous pouvez maintenant prendre l'objet immédiatement.";
+    takeBtn.disabled = false;
+    takeBtn.style.background = "linear-gradient(135deg, #0f766e, #0ea5a4)";
+    takeBtn.style.color = "#ffffff";
+    takeBtn.style.cursor = "pointer";
+    takeBtn.innerHTML = '<i class="fas fa-hand-holding" style="margin-right: 6px;"></i>Je prends';
+    takeBtn.onclick = function () { 
+      closeOverlay();
+      prendreObjet(selectedObjectDetails.id, selectedObjectDetails.name || "Objet", {});
+    };
+    return;
+  }
+
+  statusPill.className = "object-status-pill inactive";
+  statusPill.textContent = "Indisponible";
+  titleEl.textContent = "Cet objet n'est pas disponible pour la prise pour le moment.";
+  copyEl.textContent = "Statut vérifié: non disponible. Vous ne pouvez pas le prendre actuellement.";
+  takeBtn.disabled = true;
+  takeBtn.style.background = "#cbd5e1";
+  takeBtn.style.color = "#64748b";
+  takeBtn.style.cursor = "not-allowed";
+  takeBtn.innerHTML = '<i class="fas fa-ban" style="margin-right: 6px;"></i>Indisponible';
+}
+
+async function confirmTakeSelectedObject() {
+  if (!selectedObjectDetails?.id) return;
+  const borrowPayload = buildBorrowRequestPayload();
+  if (!borrowPayload) return;
+  closeOverlay();
+  await prendreObjet(selectedObjectDetails.id, selectedObjectDetails.name || "Objet", borrowPayload);
+}
+
+async function retournerObjet(objId) {
+  const safeObjId = String(objId || "").trim();
+  if (!safeObjId) {
+    showAppToast("Identifiant objet introuvable", "error", "Erreur");
+    return;
+  }
+  try {
+    const response = await postToFirstAvailableEndpoint(
+      [
+        `/things/${encodeURIComponent(safeObjId)}/retourner`,
+        `/return/${encodeURIComponent(safeObjId)}`
+      ],
+      getAuthHeaders()
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      showAppToast(data.detail || "Retour impossible", "error", "Echec du retour");
+      return;
+    }
+    await logUserAction("Objet", `Retour de l'objet ${safeObjId}`, "Succes");
+    showAppToast(data.message || "Objet retourne", "success", "Objet retourne");
+    await loadUserThings(String(activeQuickFilterQuery || (mainSearch ? mainSearch.value : "") || ""));
+  } catch (error) {
+    console.error("Erreur retourner:", error);
+    showAppToast("Erreur reseau", "error", "Connexion");
+  }
+}
+
+function refreshStats() {
+  const visibleRows = Array.from(objectsBody.querySelectorAll(".object-row")).filter(row => row.style.display !== "none");
+}
+
+async function checkAvailability(objId, objName, statusCode) {
+  const currentStatusCode = await getLiveObjectStatusCode(objId, statusCode);
+  const isAvailable = currentStatusCode === "active";
+  const isInUse = currentStatusCode === "in_use";
+  const isBroken = currentStatusCode === "broken";
+  const status = isAvailable
+    ? "disponible"
+    : (isInUse ? "en utilisation" : (isBroken ? "en panne" : "non disponible"));
+  const message = `${objName} est ${status}`;
+
+  if (isAvailable) {
+    showAppToast(message, "success", "Disponibilité");
+  } else if (isInUse) {
+    showAppToast(message, "info", "Disponibilité");
+  } else if (isBroken) {
+    showAppToast(message, "error", "Panne");
+  } else {
+    showAppToast(message, "error", "Indisponibilité");
+  }
+
+  return currentStatusCode;
+}
+
+function addToFav(objId, objName) {
+  const decodedName = decodeHtmlEntities(objName) || "Objet sans nom";
+  const decodedId = decodeHtmlEntities(objId);
+  if (!decodedId) return;
+  
+  const exists = userFavorites.find(f => f.id === decodedId);
+  
+  if (!exists) {
+    // Ajouter aux favoris via l'API
+    fetch(`${apiBase}/user/favorites`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        thing_id: decodedId,
+        thing_name: decodedName
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        userFavorites = data.favorites || [];
+        try { window.userFavorites = userFavorites; } catch (e) {}
+        try { window.dispatchEvent(new CustomEvent('app:favorites-changed', { detail: { favorites: userFavorites } })); } catch (e) {}
+        showAppToast(`${decodedName} ajouté aux favoris`, "success", "Favoris");
+        updateFavButton(decodedId);
+        if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.setFavorites === "function") {
+          window.__ibFavoritesStore.setFavorites(userFavorites);
+        }
+        try {
+          if (overlayTitle && String(overlayTitle.textContent || "").trim() === "Mes favoris") {
+            openOverlay("Mes favoris", buildFavoritesOverlayHtml());
+          }
+        } catch (e) {
+          // ignore
+        }
+      } else {
+        showAppToast("Erreur lors de l'ajout", "error", "Erreur");
+      }
+    })
+    .catch(err => {
+      console.error("Erreur add favorite:", err);
+      showAppToast("Erreur réseau", "error", "Connexion");
+    });
+  } else {
+    // Retirer des favoris via l'API
+    fetch(`${apiBase}/user/favorites/${encodeURIComponent(decodedId)}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        userFavorites = data.favorites || [];
+        try { window.userFavorites = userFavorites; } catch (e) {}
+        try { window.dispatchEvent(new CustomEvent('app:favorites-changed', { detail: { favorites: userFavorites } })); } catch (e) {}
+        showAppToast(`${decodedName} retiré des favoris`, "success", "Favoris");
+        updateFavButton(decodedId);
+        if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.setFavorites === "function") {
+          window.__ibFavoritesStore.setFavorites(userFavorites);
+        }
+      } else {
+        showAppToast("Erreur lors du retrait", "error", "Erreur");
+      }
+    })
+    .catch(err => {
+      console.error("Erreur remove favorite:", err);
+      showAppToast("Erreur réseau", "error", "Connexion");
+    });
+  }
+}
+
+function updateFavButton(objId) {
+  const buttonEl = document.querySelector(`button[onclick*="addToFav"]`);
+  if (buttonEl) {
+    const isFav = userFavorites.find(f => f.id === objId);
+    buttonEl.innerHTML = isFav 
+      ? '<i class="fas fa-heart" style="margin-right: 6px; color: #dc2626;"></i>Retirer des favoris' 
+      : '<i class="fas fa-heart" style="margin-right: 6px;"></i>Ajouter aux favoris';
+  }
+}
+
+function reportProblemObj(objId, objName) {
+  const decodedName = objName.replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const decodedId = objId.replace(/&quot;/g, '"');
+  
+  const description = prompt(`Décrivez le problème avec "${decodedName}":`);
+  if (description && description.trim()) {
+    const reporter = getCurrentReporterInfo();
+    userReports.push({ 
+      id: decodedId, 
+      name: decodedName, 
+      description: description.trim(), 
+      reportedAt: new Date().toISOString(),
+      status: "En attente",
+      reporterName: reporter.reporterName,
+      reporterEmail: reporter.reporterEmail,
+      reporterId: reporter.reporterId
+    });
+    normalizeStoredCollections();
+    showAppToast("Problème signalé avec succès", "success", "Signalement");
+  }
+}
+
+function openReportProblemModal(objId, objName) {
+  const decodedName = objName.replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const decodedId = objId.replace(/&quot;/g, '"');
+  
+  const problemTypes = [
+    "Objet endommagé",
+    "Position incorrecte",
+    "Information manquante",
+    "Autre"
+  ];
+
+  const typeOptions = problemTypes.map((type, idx) => 
+    `<option value="${type}">${type}</option>`
+  ).join("");
+
+  const formHtml = `
+    <div style="max-width: 600px; margin: 0 auto;">
+      <div style="background: #f8fafc; padding: 18px; border-radius: 14px; margin-bottom: 18px; border: 1px solid #cbd5e1;">
+        <label style="display: block; font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Objet</label>
+        <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #0f172a; font-weight: 600;">${sanitizeText(decodedName)}</div>
+      </div>
+
+      <div style="background: #f8fafc; padding: 18px; border-radius: 14px; margin-bottom: 18px; border: 1px solid #cbd5e1;">
+        <label for="problemType" style="display: block; font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Type de problème</label>
+        <select id="problemType" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 10px; background: #ffffff; font-size: 14px; cursor: pointer; outline: none;">
+          ${typeOptions}
+        </select>
+      </div>
+
+      <div style="background: #f8fafc; padding: 18px; border-radius: 14px; margin-bottom: 18px; border: 1px solid #cbd5e1;">
+        <label for="problemDesc" style="display: block; font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Description du problème</label>
+        <textarea id="problemDesc" placeholder="Décrivez en détail le problème rencontré..." style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 100px; outline: none;" maxlength="500"></textarea>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">Maximum 500 caractères</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeOverlay()" style="border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a; padding: 11px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px;">Annuler</button>
+        <button type="button" onclick="submitReportProblem('${decodedId}', '${decodedName}')" style="border: none; background: linear-gradient(135deg, #dc2626, #991b1b); color: #ffffff; padding: 11px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px;">Envoyer le signalement</button>
+      </div>
+    </div>
+  `;
+
+  openOverlay("Signaler un problème", formHtml);
+}
+
+function submitReportProblem(objId, objName) {
+  const problemType = document.getElementById("problemType")?.value || "";
+  const problemDesc = document.getElementById("problemDesc")?.value || "";
+
+  if (!problemType || !problemType.trim()) {
+    showAppToast("Veuillez sélectionner un type de problème", "error", "Validation");
+    return;
+  }
+
+  if (!problemDesc || !problemDesc.trim()) {
+    showAppToast("Veuillez décrire le problème", "error", "Validation");
+    return;
+  }
+
+  // Envoyer le signalement à l'API (pas de localStorage)
+  try {
+    fetch(`${apiBase}/problem-report`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        thing_id: objId,
+        thing_name: objName,
+        problem_type: problemType,
+        description: problemDesc.trim()
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showAppToast(data.message || "Problème signalé avec succès", "success", "Signalement envoyé");
+        closeOverlay();
+      } else {
+        showAppToast(data.detail || "Erreur lors du signalement", "error", "Erreur");
+      }
+    })
+    .catch(err => {
+      console.error("Erreur envoi signalement:", err);
+      showAppToast("Erreur réseau", "error", "Connexion");
+    });
+  } catch (error) {
+    console.error("Erreur signalement:", error);
+    showAppToast("Erreur lors du signalement", "error", "Erreur");
+  }
+}
+
+function buildFavoritesOverlayHtml() {
+  if (!userFavorites || userFavorites.length === 0) {
+    return "<p style=\"padding: 20px; text-align: center; color: #475569;\">Aucun objet dans vos favoris pour le moment.</p>";
+  }
+
+  const items = userFavorites.map((fav) => {
+    const favoriteId = JSON.stringify(String((fav && fav.id) || ""));
+    return `
+      <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="margin: 0; color: #0f172a; font-weight: 700; font-size: 15px;">${sanitizeText(fav.name || fav.id)}</p>
+          <p style="margin: 4px 0 0 0; color: #64748b; font-size: 12px;">Ajouté le ${sanitizeText(new Date(fav.addedAt).toLocaleDateString('fr-FR'))}</p>
+        </div>
+        <button type="button" onclick='removeFavorite(${favoriteId})' style="background: #fee2e2; color: #b91c1c; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; margin-left: 10px;">Retirer</button>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div style="max-width: 600px; margin: 0 auto;">
+      ${items}
+    </div>
+  `;
+}
+
+function removeFavorite(objId) {
+  if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.removeFavoriteById === "function") {
+    window.__ibFavoritesStore.removeFavoriteById(objId).then(function (next) {
+      userFavorites = Array.isArray(next) ? next : [];
+      openOverlay("Mes favoris", buildFavoritesOverlayHtml());
+      showAppToast("Objet retirÃ© des favoris", "success", "Favoris");
+    }).catch(function (err) {
+      console.error("Erreur remove favorite:", err);
+      showAppToast("Erreur rÃ©seau", "error", "Connexion");
+    });
+    return;
+  }
+
+  fetch(`${apiBase}/user/favorites/${encodeURIComponent(objId)}`, {
+    method: "DELETE",
+    headers: getAuthHeaders()
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      userFavorites = data.favorites || [];
+      if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.setFavorites === "function") {
+        window.__ibFavoritesStore.setFavorites(userFavorites);
+      }
+      // Refresh overlay
+      openOverlay("Mes favoris", buildFavoritesOverlayHtml());
+      showAppToast("Objet retiré des favoris", "success", "Favoris");
+    } else {
+      showAppToast("Erreur lors du retrait", "error", "Erreur");
+    }
+  })
+  .catch(err => {
+    console.error("Erreur remove favorite:", err);
+    showAppToast("Erreur réseau", "error", "Connexion");
+  });
+}
+
+function buildReportsOverlayHtml() {
+  normalizeStoredCollections();
+  if (!userReports || userReports.length === 0) {
+    return "<p style=\"padding: 20px; text-align: center; color: #475569;\">Aucun problème signalé pour le moment.</p>";
+  }
+
+  const items = userReports.map((report, idx) => {
+    const statusIcon = report.status === "En attente" 
+      ? '<i class="fas fa-clock" style="margin-right: 8px;"></i>' 
+      : report.status === "Traité" 
+        ? '<i class="fas fa-check-circle" style="margin-right: 8px;"></i>'
+        : '<i class="fas fa-times-circle" style="margin-right: 8px;"></i>';
+    
+    const statusBadgeStyle = report.status === "En attente" 
+      ? "background: #fef3c7; color: #92400e;" 
+      : report.status === "Traité" 
+        ? "background: #dcfce7; color: #166534;"
+        : "background: #fee2e2; color: #b91c1c;";
+    
+    return `
+      <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+          <div>
+            <p style="margin: 0; color: #0f172a; font-weight: 700; font-size: 15px;">${sanitizeText(getSafeEntryName(report))}</p>
+            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 12px;"><strong>Type:</strong> ${sanitizeText(report.type || "Non spécifié")}</p>
+          </div>
+          <span style="display: inline-block; padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; ${statusBadgeStyle}">${statusIcon}${sanitizeText(report.status || "En attente")}</span>
+        </div>
+        <p style="margin: 8px 0; color: #475569; font-size: 13px; line-height: 1.5;"><strong>Problème:</strong> ${sanitizeText(report.description)}</p>
+        <p style="margin: 6px 0 10px 0; color: #94a3b8; font-size: 12px;">Signalé le ${sanitizeText(new Date(report.reportedAt).toLocaleDateString('fr-FR'))}</p>
+        <button type="button" onclick="removeReport(${idx})" style="background: #fee2e2; color: #b91c1c; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px;">Supprimer</button>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div style="max-width: 600px; margin: 0 auto;">
+      ${items}
+    </div>
+  `;
+}
+
+function removeReport(idx) {
+  userReports.splice(idx, 1);
+  normalizeStoredCollections();
+  openOverlay("Problèmes signalés", buildReportsOverlayHtml());
+  showAppToast("Signalement supprimé", "success", "Suppression");
+}
+
+if (profileButton && menu) {
+  profileButton.addEventListener("click", toggleMenu);
+  document.addEventListener("click", (event) => {
+    if (!(menu.contains(event.target) || profileButton.contains(event.target))) closeMenu();
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeMenu();
+    if (!infoOverlay.hidden) closeOverlay();
+  }
+});
+
+mainSearch.addEventListener("input", () => {
+  activeQuickFilterQuery = String(mainSearch.value || "");
+  setActiveFilterChip(activeQuickFilterQuery);
+  loadUserThings(activeQuickFilterQuery);
+});
+
+if (openHistoryOverlay) {
+  openHistoryOverlay.addEventListener("click", async (event) => {
+    event.preventDefault();
+    await loadUserHistory();
+    openOverlay("Historique utilisateur", buildHistoryOverlayHtml());
+  });
+}
+openFavoritesOverlay.addEventListener("click", (event) => {
+  event.preventDefault();
+  openOverlay("Mes favoris", buildFavoritesOverlayHtml());
+});
+if (openReportsOverlay) {
+  openReportsOverlay.addEventListener("click", (event) => {
+    event.preventDefault();
+    openOverlay("Problèmes signalés", buildReportsOverlayHtml());
+  });
+}
+if (openProfileOverlay) {
+  openProfileOverlay.addEventListener("click", async (event) => {
+    event.preventDefault();
+    await loadUserProfile();
+    await loadUserHistory();
+    const stats = await fetchProfileStats();
+    closeMenu();
+    openOverlay("Mon profil", buildProfileOverlayHtml(userProfileData || {}, stats));
+
+  const saveBtn = document.getElementById("saveProfileNameBtn");
+  const input = document.getElementById("profileDisplayNameInput");
+  const logoutFromProfileBtn = document.getElementById("logoutFromProfileBtn");
+
+  if (saveBtn && input) {
+    saveBtn.addEventListener("click", async function () {
+      const value = String(input.value || "").trim();
+      if (!value) {
+        showAppToast("Veuillez saisir un nom valide.", "error", "Profil");
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${apiBase}/user/display-name`, {
+          method: "PATCH",
+          headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+          body: JSON.stringify({ display_name: value })
+        });
+
+        if (resp.status === 409) {
+          const payload = await resp.json().catch(() => ({}));
+          showAppToast(payload.detail || "Ce nom d'affichage est déjà pris.", "error", "Profil");
+          return;
+        }
+
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+          const uid = getCurrentUserId();
+          if (uid) {
+            localStorage.setItem(scopedKey(PROFILE_NAME_KEY, uid), value);
+          }
+          localStorage.setItem(PROFILE_NAME_KEY, value);
+          applyDisplayName(value);
+          if (window.refreshSidebarProfileCards) {
+            window.refreshSidebarProfileCards({
+              id: uid,
+              email: (userProfileData && userProfileData.email) || localStorage.getItem("userEmail") || "",
+              role: "user",
+              display_name: value
+            });
+          }
+          showAppToast("Nom affiche mis a jour.", "success", "Profil");
+        } else {
+          showAppToast((data && data.detail) || "Erreur mise à jour.", "error", "Profil");
+        }
+      } catch (err) {
+        console.error('Erreur update display name:', err);
+        showAppToast('Erreur réseau', 'error', 'Profil');
+      }
+    });
+  }
+
+    if (logoutFromProfileBtn) {
+      logoutFromProfileBtn.addEventListener("click", function () {
+        localStorage.removeItem("userToken");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userDisplayName");
+        localStorage.removeItem("user_room");
+        localStorage.removeItem("user_x");
+        localStorage.removeItem("user_y");
+        localStorage.removeItem("user_z");
+        window.location.href = "login.html";
+      });
+    }
+  });
+}
+
+overlayBackdrop.addEventListener("click", closeOverlay);
+overlayClose.addEventListener("click", closeOverlay);
+
+if (logoutLink) {
+  logoutLink.addEventListener("click", function (event) {
+    event.preventDefault();
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userDisplayName");
+    localStorage.removeItem("user_room");
+    localStorage.removeItem("user_x");
+    localStorage.removeItem("user_y");
+    localStorage.removeItem("user_z");
+    window.location.href = "login.html";
+  });
+}
+
+async function initUserDashboard() {
+  normalizeStoredCollections();
+  await loadUserProfile();
+  await loadUserFavorites();
+  if (String((userProfileData && userProfileData.role) || "").toLowerCase() !== "user") {
+    return;
+  }
+
+  // Récupérer et afficher la position de l'utilisateur
+  const storedRoom = localStorage.getItem('user_room') || 'Non définie';
+  const user_room = canonicalRoomFromCache(storedRoom) || storedRoom;
+  if (user_room !== storedRoom && user_room !== 'Non définie') {
+    localStorage.setItem('user_room', user_room);
+  }
+  if (userCurrentPos) {
+    userCurrentPos.textContent = user_room;
+  }
+  if (quickPositionCurrentRoom) {
+    quickPositionCurrentRoom.textContent = user_room;
+  }
+
+  await loadLayoutFloors();
+  renderQuickPositionSelectors(user_room);
+
+  await loadUserThings("");
+  await loadUserHistory();
+  startUserThingsAutoRefresh();
+
+  const uid = getCurrentUserId() || "anonymous";
+  const sessionLoginKey = `sessionLoginLogged:${uid}`;
+  if (!sessionStorage.getItem(sessionLoginKey)) {
+    await logUserAction("Connexion", "Session utilisateur ouverte", "Succes");
+    sessionStorage.setItem(sessionLoginKey, "1");
+  }
+}
+
+async function loadUserFavorites() {
+  try {
+    const response = await fetch(`${apiBase}/user/favorites`, {
+      method: "GET",
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.success && Array.isArray(data.favorites)) {
+      if (window.__ibFavoritesStore && typeof window.__ibFavoritesStore.setFavorites === "function") {
+        window.__ibFavoritesStore.setFavorites(data.favorites);
+      } else {
+        userFavorites = data.favorites;
+        try { window.userFavorites = userFavorites; } catch (e) {}
+        try { window.dispatchEvent(new CustomEvent('app:favorites-changed', { detail: { favorites: userFavorites } })); } catch (e) {}
+      }
+    }
+  } catch (err) {
+    console.error("Erreur chargement favoris:", err);
+  }
+}
+
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) {
+    loadUserThings(String(activeQuickFilterQuery || (mainSearch ? mainSearch.value : "") || ""));
+  }
+});
+
+initUserDashboard();
+</script>
+<script src="sidebar-overlay-active.js"></script>
+</body>
+</html>

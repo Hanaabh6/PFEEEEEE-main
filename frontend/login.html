@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-key="login_doc_title">Connexion - IntelliBuild</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="theme.css">
+  <script data-theme-role-script>
+    (function () {
+      var path = (window.location.pathname.split('/').pop() || '').toLowerCase();
+      var page = path.replace('.html', '') || 'home';
+      document.documentElement.setAttribute('data-page', page);
+
+      var role = (localStorage.getItem('userRole') || '').toLowerCase();
+      if (!role) {
+        if (page.indexOf('admin') >= 0 || ['index', 'ajouter-objet', 'objets', 'localisations', 'parametres'].indexOf(page) >= 0) {
+          role = 'admin';
+        } else if (page.indexOf('user') >= 0 || ['user', 'mesobjet', 'localisations-user', 'parametres-user'].indexOf(page) >= 0) {
+          role = 'user';
+        } else {
+          role = 'guest';
+        }
+      }
+      document.documentElement.setAttribute('data-role', role);
+    })();
+  </script>
+</head>
+<body class="auth-page">
+
+<header class="topbar">
+  <h2>
+    <div class="logo">
+      <img class="brand-logo-lg" src="intellibuild-mark.svg" alt="IntelliBuild">
+      <span data-key="brand">IntelliBuild</span>
+    </div>
+  </h2>
+  <div class="right">
+    <select class="lang">
+      <option value="fr">FR</option>
+      <option value="en">EN</option>
+      <option value="ar">AR</option>
+    </select>
+    <a href="p1.html" class="btn outline" data-key="nav_home">Accueil</a>
+  </div>
+</header>
+
+<section class="auth-container auth-container--login">
+  <div class="auth-showcase" aria-hidden="true">
+    <div class="auth-showcase-card auth-showcase-card--login">
+<h1 class="welcome-title" data-key="login_showcase_title">Bienvenue sur IntelliBuild</h1>
+      <h2 class="welcome-subtitle" data-key="login_showcase_text_1">Ravi de vous revoir</h2>
+      <p class="welcome-description" data-key="login_showcase_text_2">Connectez-vous pour continuer.</p>
+    </div>
+  </div>
+
+  <div class="auth-box auth-box--login">
+    <div class="auth-intro">
+      <h2 data-key="login_title">Connexion</h2>
+      <p data-key="login_sub">Renseignez vos identifiants pour accéder à votre espace IntelliBuild</p>
+    </div>
+
+    
+
+    <form id="loginForm" class="auth-form">
+      <label data-key="label_email">Email</label>
+      <input id="loginEmail" type="email" inputmode="email" autocomplete="email" placeholder="exemple@mail.com" data-key="ph_email" data-attr="placeholder" required>
+
+      <label data-key="label_password">Mot de passe</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" data-key="ph_password" data-attr="placeholder" required>
+
+      <button type="submit" class="login-btn" data-key="btn_signin">Se connecter</button>
+
+      <div class="auth-form-links">
+        <button type="button" class="forgot-btn" id="forgotBtn" data-key="forgot_password">Mot de passe oublie ?</button>
+        <div class="auth-register-line" data-html="true" data-key="auth_link_register_inline">Pas de compte ? <a href="register.html">S'inscrire</a></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="brand">
+    <img src="intellibuild-mark.svg" alt="IntelliBuild">
+    <span>IntelliBuild</span>
+  </div>
+  <div>(c) 2026 IntelliBuild. All rights reserved.</div>
+</footer>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="translations.js"></script>
+<script>
+  const apiBase = window.APP_CONFIG.API_BASE;
+  const SUPABASE_URL = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = window.APP_CONFIG && window.APP_CONFIG.SUPABASE_ANON_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error("Configuration Supabase manquante dans config.js");
+  }
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('forgotBtn').addEventListener('click', async () => {
+    const field = document.getElementById('loginEmail');
+    const email = (field.value || prompt('Entrez votre email pour reinitialiser le mot de passe:') || '').trim();
+    if (!email) return;
+    try {
+      const redirect = `${window.APP_CONFIG.API_BASE.replace(/\/+$/, '')}/reset.html`;
+      const result = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: redirect
+      });
+      if (result.error) {
+        alert("Erreur: " + (result.error.message || "Impossible d'envoyer l'email"));
+        return;
+      }
+      alert('Email de reinitialisation envoye. Verifiez votre boite mail.');
+    } catch (err) {
+      console.error('Erreur resetPasswordForEmail:', err);
+      alert("Erreur lors de l'envoi de l'email.");
+    }
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+      const response = await fetch(`${apiBase}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const token = result.access_token || (result.session && result.session.access_token);
+        const nextUserId = String(result.user_id || '').trim();
+        const previousUserId = String(localStorage.getItem('userId') || '').trim();
+        const role = result.role || 'user';
+
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userRole', role);
+        localStorage.setItem('userEmail', result.email || email);
+
+        if (nextUserId) {
+          localStorage.setItem('userId', nextUserId);
+          if (previousUserId !== nextUserId) {
+            const scopedFavorites = localStorage.getItem(`userFavorites:${nextUserId}`);
+            localStorage.setItem('userFavoritesOwner', nextUserId);
+            localStorage.setItem('userFavorites', scopedFavorites || '[]');
+          }
+        }
+
+        if (role === 'admin') {
+          window.location.href = 'index.html';
+        } else {
+          window.location.href = 'user.html';
+        }
+      } else {
+        alert('Erreur : ' + (result.detail || 'Identifiants incorrects'));
+      }
+    } catch (_error) {
+      alert('Erreur de connexion au serveur.');
+    }
+  });
+</script>
+</body>
+</html>

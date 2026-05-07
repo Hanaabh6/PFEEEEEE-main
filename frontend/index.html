@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliBuild - Dashboard Admin</title>
+    <script src="config.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <style>
+        body{background:url('https://images.pexels.com/photos/4040649/pexels-photo-4040649.jpeg') no-repeat center center fixed;background-size:cover;min-height:100vh;margin:0}
+        .glass-sidebar{width:280px !important;flex:0 0 280px !important;padding:24px !important;background:rgba(0,0,0,0.92);backdrop-filter:blur(4px)}
+        .glass-sidebar nav{gap:0 !important;margin-top:40px !important}
+        .glass-sidebar nav a{gap:10px !important;padding:13px 14px !important;margin:10px 0 !important;border-radius:10px !important;color:#d1d5db !important;font-weight:600;transition:background 0.25s ease,color 0.25s ease}
+        .glass-sidebar nav a i{width:18px;text-align:center;flex:0 0 18px}
+        .glass-sidebar nav a:hover{background:#1f2937 !important;color:#fff !important}
+        .glass-sidebar nav a.bg-emerald-700{background:#047857 !important;color:#fff !important;box-shadow:inset 0 0 0 1px rgba(16,185,129,0.45)}
+        .glass-main{background:rgba(255,255,255,0.75);backdrop-filter:blur(10px)}
+        .overlay-modal{position:fixed;inset:0;display:grid;place-items:center;z-index:1200}
+        .overlay-modal[hidden]{display:none}
+        .overlay-backdrop{position:absolute;inset:0;background:rgba(2,6,23,0.66);backdrop-filter:blur(3px)}
+        .overlay-panel{position:relative;width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;border-radius:20px;padding:20px;background:rgba(255,255,255,0.97);box-shadow:0 24px 55px rgba(2,6,23,0.35);border:1px solid rgba(148,163,184,0.25)}
+        .overlay-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+        .overlay-title{margin:0;font-size:22px;color:#0f172a}
+        .overlay-close{border:none;width:36px;height:36px;border-radius:999px;background:#e2e8f0;color:#0f172a;font-size:18px;cursor:pointer}
+        .overlay-close:hover{background:#cbd5e1}
+        .role-chip{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;color:#065f46;background:#d1fae5}
+        .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:14px}
+        .role-item{background:rgba(255,255,255,0.85);border:1px solid rgba(148,163,184,0.3);border-radius:12px;padding:12px}
+        .role-item h4{margin:0 0 6px;font-size:14px;color:#0f172a}
+        .role-item p{margin:0;font-size:13px;color:#334155}
+            /* Réductions d'espacements pour la sidebar (logo / nom / langue / menu) */
+            .glass-sidebar.admin-sidebar{gap:0.25rem !important;padding-top:12px !important;padding-bottom:12px !important}
+            .glass-sidebar .sidebar-logo{margin-bottom:2px !important;display:flex;align-items:center;gap:6px}
+            .glass-sidebar .sidebar-logo img{height:36px !important;width:36px !important}
+            .glass-sidebar .sidebar-logo [data-key="brand"], .glass-sidebar .sidebar-logo h2{font-size:16px !important;line-height:1}
+            .glass-sidebar .sidebar-lang{margin-top:6px !important}
+            .glass-sidebar .lang-note{margin-top:4px !important;font-size:12px}
+            .glass-sidebar .sidebar-nav{margin-top:6px !important}
+            .glass-sidebar nav a{margin:4px 0 !important;padding:8px 10px !important;gap:8px !important;font-size:14px}
+            .glass-sidebar nav a i{width:18px}
+            .glass-sidebar nav a span{line-height:1}
+            /* Rendre le sélecteur de langue plus lisible (fond clair, texte sombre) */
+            .glass-sidebar .sidebar-lang, .glass-sidebar .lang-select{background:#ffffff !important;color:#0f172a !important;border:1px solid rgba(15,23,42,0.08) !important;padding:6px 8px !important;border-radius:8px}
+            .glass-sidebar .sidebar-lang option, .glass-sidebar .lang-select option{color:#0f172a !important;background:#ffffff !important}
+            /* Afficher fond blanc uniquement quand le select n'est pas activé (avant ouverture) */
+            .glass-sidebar .sidebar-lang:not(:focus), .glass-sidebar .lang-select:not(:focus) {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                box-shadow: none !important;
+                -webkit-appearance: none !important;
+                appearance: none !important;
+            }
+            /* Forcer la couleur du texte du select (couverture vendor-specific) */
+            .glass-sidebar .sidebar-lang, .glass-sidebar .lang-select {
+                color: #0f172a !important;
+                -webkit-text-fill-color: #0f172a !important;
+            }
+            .glass-sidebar .sidebar-lang::-ms-value, .glass-sidebar .lang-select::-ms-value { color: #0f172a !important; }
+            .glass-sidebar .sidebar-lang:-moz-focusring, .glass-sidebar .lang-select:-moz-focusring { color: #0f172a !important; }
+            /* Quand le select est activé (focus/open) : texte blanc sur fond noir */
+            .glass-sidebar .sidebar-lang:focus, .glass-sidebar .lang-select:focus {
+                background: #000 !important;
+                color: #fff !important;
+                -webkit-text-fill-color: #fff !important;
+                box-shadow: none !important;
+            }
+    </style>
+    <link rel="stylesheet" href="theme.css">
+    <script data-theme-role-script>(function(){var p=(window.location.pathname.split('/').pop()||'').toLowerCase();var g=p.replace('.html','')||'home';document.documentElement.setAttribute('data-page',g);var r=(localStorage.getItem('userRole')||'').toLowerCase();if(!r){if(g.indexOf('admin')>=0||['index','ajouter-objet','objets','localisations','parametres'].indexOf(g)>=0)r='admin';else if(g.indexOf('user')>=0||['user','mesobjet','localisations-user','parametres-user'].indexOf(g)>=0)r='user';else r='guest';}document.documentElement.setAttribute('data-role',r);})();</script>
+</head>
+<body class="flex">
+    <script>if(!localStorage.getItem('userToken'))window.location.href='login.html';</script>
+    <script src="sidebar-loader.js?v=20260501-favorites-fix2"></script>
+
+    <main class="flex-1" style="padding:32px">
+        <header class="admin-header animate-fadeIn">
+            <div class="admin-header-brand" id="headerPosition">
+                <i class="fas fa-street-view" style="font-size:18px;color:#10b981;margin-right:8px"></i>
+                <span id="positionDebugText">Salle inconnue</span>
+            </div>
+            <div class="admin-header-search">
+                <input type="text" id="globalSearch" placeholder="Rechercher un objet, une salle, un type...">
+            </div>
+            <div class="admin-header-actions">
+                <div class="notif-bell" id="notifBell" title="Notifications" onclick="window.location.href='notifications-admin.html'">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                </div>
+                <div class="admin-profile">
+                    <button class="admin-profile-btn" id="profileButton" type="button" aria-haspopup="menu" aria-expanded="false">
+                        <div class="avatar" id="profileAvatar">A</div>
+                        <span id="profileName">Admin</span>
+                        <i class="fas fa-chevron-down" style="font-size:10px;color:#94a3b8"></i>
+                    </button>
+                    <div class="admin-profile-dropdown" id="profileDropdown" role="menu">
+                        <a href="#" role="menuitem" id="openProfileOverlay"><i class="fas fa-user" style="color:#047857"></i> Mon profil</a>
+                        <a href="#" role="menuitem" id="openHistoryOverlay"><i class="fas fa-history" style="color:#047857"></i> Historique</a>
+                        <a href="parametres.html" role="menuitem"><i class="fas fa-cog" style="color:#047857"></i> Paramètres</a>
+                        <hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0">
+                        <a href="#" role="menuitem" id="logoutLink"><i class="fas fa-sign-out-alt" style="color:#e11d48"></i> Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- hero removed per user request; position shown in header -->
+
+        <div class="top-layout">
+            <div class="quick-actions-col animate-fadeInUp delay-2">
+                <a href="ajouter-objet.html" class="quick-action-btn primary"><i class="fas fa-plus"></i> Ajouter un objet</a>
+                <a href="objets.html" class="quick-action-btn secondary"><i class="fas fa-boxes"></i> Inventaire</a>
+                <a href="localisations.html" class="quick-action-btn secondary"><i class="fas fa-map-marked-alt"></i> Carte 3D</a>
+                <a href="#" class="quick-action-btn secondary" id="quickReports" onclick="return window.__ibOpenAdminReportsOverlay ? window.__ibOpenAdminReportsOverlay(event) : false;"><i class="fas fa-exclamation-triangle"></i> Signalements</a>
+                <a href="parametres.html" class="quick-action-btn secondary"><i class="fas fa-sliders-h"></i> Paramètres</a>
+            </div>
+
+            <div class="main-stats">
+                <section class="kpi-grid animate-fadeInUp delay-2">
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Total Objets</span><div class="kpi-card-icon emerald"><i class="fas fa-layer-group"></i></div></div>
+                <div class="kpi-card-value" id="kpiTotal">0</div><div class="kpi-card-hint">Dans l'inventaire</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barTotal" style="width:100%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Disponibles</span><div class="kpi-card-icon teal"><i class="fas fa-check-circle"></i></div></div>
+                <div class="kpi-card-value" id="kpiActive" style="color:#047857">0</div><div class="kpi-card-hint" id="kpiActivePct">0% du total</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barActive" style="width:0%;background:linear-gradient(90deg,#14b8a6,#2dd4bf)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Indisponible</span><div class="kpi-card-icon rose"><i class="fas fa-ban"></i></div></div>
+                <div class="kpi-card-value" id="kpiInactive" style="color:#e11d48">0</div><div class="kpi-card-hint" id="kpiInactivePct">0% du total</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barInactive" style="width:0%;background:linear-gradient(90deg,#f43f5e,#fb7185)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">En Panne</span><div class="kpi-card-icon orange"><i class="fas fa-tools"></i></div></div>
+                <div class="kpi-card-value" id="kpiBroken" style="color:#ea580c">0</div><div class="kpi-card-hint">Signalements en cours</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barBroken" style="width:0%;background:linear-gradient(90deg,#f97316,#fb923c)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">En utilisation</span><div class="kpi-card-icon blue"><i class="fas fa-hand-holding"></i></div></div>
+                <div class="kpi-card-value" id="kpiBorrowed" style="color:#2563eb">0</div><div class="kpi-card-hint">En utilisation</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barBorrowed" style="width:0%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Signalements</span><div class="kpi-card-icon rose"><i class="fas fa-exclamation-circle"></i></div></div>
+                <div class="kpi-card-value" id="kpiReports" style="color:#be123c">0</div><div class="kpi-card-hint">Non traités</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barReports" style="width:0%;background:linear-gradient(90deg,#e11d48,#f43f5e)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Vues Totales</span><div class="kpi-card-icon purple"><i class="fas fa-eye"></i></div></div>
+                <div class="kpi-card-value" id="kpiViews" style="color:#7c3aed">0</div><div class="kpi-card-hint">Consultations</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barViews" style="width:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-header"><span class="kpi-card-label">Salles</span><div class="kpi-card-icon slate"><i class="fas fa-map-marker-alt"></i></div></div>
+                <div class="kpi-card-value" id="kpiRooms" style="color:#475569">0</div><div class="kpi-card-hint">Zones couvertes</div>
+                <div class="kpi-card-bar"><div class="kpi-card-bar-fill" id="barRooms" style="width:100%;background:linear-gradient(90deg,#64748b,#94a3b8)"></div></div>
+            </div>
+            </section>
+
+            <section class="charts-grid animate-fadeInUp delay-3">
+            <div class="chart-card"><div class="chart-card-title"><i class="fas fa-chart-pie"></i> Répartition par type</div><div class="chart-container"><canvas id="chartByType"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fas fa-chart-pie"></i> Répartition par statut</div><div class="chart-container"><canvas id="chartByStatus"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fas fa-chart-bar"></i> Objets les plus consultés</div><div class="chart-container"><canvas id="chartTopViewed"></canvas></div></div>
+            <div class="chart-card"><div class="chart-card-title"><i class="fas fa-chart-bar"></i> Objets les plus signalés</div><div class="chart-container"><canvas id="chartTopReported"></canvas></div></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- recent activity removed per user request -->
+
+        <section class="table-box animate-fadeInUp delay-5" style="margin-bottom:28px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <h3 class="section-head">Inventaire</h3>
+                <div style="font-size:12px;font-weight:700;color:#64748b">Liste complète</div>
+            </div>
+            <div style="overflow-x:auto">
+                <table id="objectsTable" class="w-full text-left">
+                    <thead class="text-gray-600 border-b border-gray-300"><tr class="text-[11px] uppercase font-bold tracking-wider"><th class="p-3">Nom</th><th class="p-3">Type</th><th class="p-3">Salle</th><th class="p-3">Vérifier</th><th class="p-3 w-12"></th></tr></thead>
+                    <tbody id="tableBody" class="text-gray-700 divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="glass-main mt-8 p-3 rounded-2xl flex items-center justify-between text-[11px] text-gray-700 animate-fadeIn delay-6">
+            <div class="flex items-center gap-2 font-semibold text-gray-800">
+                <img src="intellibuild-mark.svg" alt="IntelliBuild" class="h-6 w-6 rounded-full object-contain"><span>IntelliBuild</span>
+            </div>
+            <div>(c) 2026 IntelliBuild. All rights reserved.</div>
+        </footer>
+    </main>
+
+    <div class="overlay-modal" id="infoOverlay" hidden aria-hidden="true">
+        <div class="overlay-backdrop" id="overlayBackdrop"></div>
+        <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+            <div class="overlay-header"><h3 class="overlay-title" id="overlayTitle">Details</h3><button class="overlay-close" id="overlayClose" type="button" aria-label="Fermer">x</button></div>
+            <div class="overlay-body" id="overlayBody"></div>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="admin-reports.js?v=20260428b"></script>
+    <script>
+        if(localStorage.getItem("userRole")!=="admin")window.location.href="user.html";
+    </script>
+    <script src="admin-dashboard.js?v=20260501-charts"></script>
+</body>
+</html>
