@@ -137,11 +137,6 @@
                 <span class="page-kicker">Catalogue objets</span>
                 <h1>Supervisez tout l’inventaire connecté</h1>
                 <p>Retrouvez, filtrez et administrez rapidement chaque objet du bâtiment depuis un catalogue plus visuel et plus fluide.</p>
-                <div class="page-badges">
-                    <span class="page-badge">Recherche rapide</span>
-                    <span class="page-badge">Edition immédiate</span>
-                    <span class="page-badge">Vue centralisée</span>
-                </div>
             </div>
             <div class="page-actions">
                 <a href="ajouter-objet.html" class="quick-link quick-link-primary">Créer un nouvel objet</a>
@@ -159,12 +154,12 @@
             <article class="page-stat-card">
                 <p class="page-stat-label">Disponibles</p>
                 <p id="objMetricActive" class="page-stat-value">0</p>
-                <p class="page-stat-note">Objets actifs ou disponibles.</p>
+                <p class="page-stat-note">Objets disponibles.</p>
             </article>
             <article class="page-stat-card">
                 <p class="page-stat-label">À surveiller</p>
                 <p id="objMetricInactive" class="page-stat-value">0</p>
-                <p class="page-stat-note">Objets inactifs ou hors service.</p>
+                <p class="page-stat-note">Objets indisponibles ou hors service.</p>
             </article>
             <article class="page-stat-card">
                 <p class="page-stat-label">Salles couvertes</p>
@@ -466,8 +461,8 @@
                         <label class="block">
                             <span class="text-slate-600 font-semibold">Statut</span>
                             <select id="editStatus" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
-                                <option value="active" ${String(details.status || '').toLowerCase() === 'active' ? 'selected' : ''}>active</option>
-                                <option value="inactive" ${String(details.status || '').toLowerCase() !== 'active' ? 'selected' : ''}>inactive</option>
+                                <option value="active" ${String(details.status || '').toLowerCase() === 'active' ? 'selected' : ''}>disponible</option>
+                                <option value="inactive" ${String(details.status || '').toLowerCase() !== 'active' ? 'selected' : ''}>indisponible</option>
                             </select>
                         </label>
                         <label class="md:col-span-2 block">

@@ -380,11 +380,6 @@
         <span class="page-kicker">Guide d’utilisation</span>
         <h1>Comment utiliser notre application web IntelliBuild</h1>
         <p>Cette page explique simplement comment naviguer dans la plateforme, se connecter, gérer les objets connectés et utiliser les espaces admin et utilisateur.</p>
-        <div class="page-badges">
-          <span id="docBadgePrimary" class="page-badge">Connexion</span>
-          <span class="page-badge">Gestion d’objets</span>
-          <span class="page-badge">Localisation 3D</span>
-        </div>
         <div class="doc-actions">
           <a id="docHeroPrimary" href="login.html" class="btn primary big">Ouvrir l’application</a>
           <a id="docHeroSecondary" href="p1.html" class="btn outline big">Retour accueil</a>
@@ -638,7 +633,7 @@
       }
       if (heroPrimary) {
         heroPrimary.href = dashboardHref;
-        heroPrimary.textContent = tr('btn_back_dashboard', 'Retour au dashboard');
+        heroPrimary.textContent = 'Retour à la recherche';
       }
       if (heroSecondary) {
         heroSecondary.style.display = 'none';

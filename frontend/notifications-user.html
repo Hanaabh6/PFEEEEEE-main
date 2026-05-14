@@ -211,6 +211,17 @@
 
     .notif.unread-item { border-color: #0ea5a4; box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2); }
 
+    .notif .btn-light {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+    }
+
+    .notif .btn-light:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
     .row-top {
       display: flex;
       justify-content: space-between;
@@ -272,7 +283,7 @@
       <div class="actions">
         <button class="btn btn-light" id="refreshBtn" type="button" data-key="btn_refresh">Rafraichir</button>
         <button class="btn btn-primary" id="markAllBtn" type="button" data-key="btn_mark_all_read">Tout marquer lu</button>
-        <button class="btn btn-light" type="button" onclick="window.location.href='user.html'" data-key="btn_back_dashboard">Retour dashboard</button>
+        <button class="btn btn-light" type="button" onclick="window.location.href='user.html'">Retour à la recherche</button>
       </div>
     </header>
 

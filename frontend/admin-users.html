@@ -68,9 +68,9 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
-      gap: 16px;
-      padding: 20px;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 14px 16px;
     }
 
     .page-kicker {
@@ -89,58 +89,11 @@
     }
 
     .page-title {
-      margin: 12px 0 8px;
-      font-size: clamp(28px, 4vw, 42px);
+      margin: 8px 0 0;
+      font-size: clamp(22px, 3vw, 30px);
       line-height: 1.04;
       color: #0f172a;
       font-weight: 900;
-    }
-
-    .page-copy {
-      margin: 0;
-      max-width: 880px;
-      color: #334155;
-      line-height: 1.65;
-      font-size: 15px;
-    }
-
-    .hero-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .hero-badge {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.06);
-      color: #0f172a;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .hero-card {
-      padding: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.92));
-      color: #fff;
-      border-radius: 18px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .hero-card h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .hero-card p {
-      margin: 0;
-      color: rgba(255, 255, 255, 0.8);
-      line-height: 1.55;
-      font-size: 13px;
     }
 
     .stats-grid {
@@ -196,8 +149,19 @@
       align-items: center;
     }
 
+    .toolbar-left:first-child {
+      flex: 1 1 560px;
+      min-width: 0;
+    }
+
+    .toolbar-left:last-child {
+      flex: 0 0 auto;
+    }
+
     .search-box {
-      min-width: min(100%, 320px);
+      flex: 1 1 560px;
+      min-width: 0;
+      width: 100%;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -596,25 +560,6 @@
 
   <div class="content-area">
     <div class="page-shell">
-      <section class="hero glass-box">
-        <div>
-          <span class="page-kicker"><i class="fas fa-users"></i> Gestion des utilisateurs</span>
-          <h1 class="page-title">Supervision des comptes IntelliBuild</h1>
-          <p class="page-copy">Consultez la table utilisateur issue de Supabase avec l'identifiant, l'email, le rôle, les favoris, l'activité récente, les signalements et la dernière mise à jour du profil. Tout est affiché en français pour une lecture rapide côté admin.</p>
-          <div class="hero-badges">
-            <span class="hero-badge">Table Supabase</span>
-            <span class="hero-badge">Favoris</span>
-            <span class="hero-badge">Signalements</span>
-            <span class="hero-badge">Dernière activité</span>
-          </div>
-        </div>
-        <div class="hero-card">
-          <h2>Lecture rapide</h2>
-          <p>Chaque ligne affiche le nom d'utilisateur, l'ID, l'email, les favoris enregistrés, le nombre de signalements et la date du dernier mouvement visible dans l'historique.</p>
-          <p>Le bouton détails ouvre aussi la liste des favoris et les entrées de signalement liées à ce compte.</p>
-        </div>
-      </section>
-
       <section class="stats-grid">
         <article class="stat-card glass-box">
           <p class="stat-label">Utilisateurs</p>
@@ -829,6 +774,10 @@
         return `<span class="pill ${roleClass}">${label}</span>`;
       }
 
+      function renderAdminAwareCount(user, value) {
+        return user.role === 'admin' ? '—' : String(value);
+      }
+
       function formatCompactId(value) {
         const id = String(value == null ? '' : value).trim();
         if (!id) return '-';
@@ -907,8 +856,8 @@
               ${renderIdCell(user)}
               <td>${escapeHtml(user.email)}</td>
               <td>${renderPill(user.role)}</td>
-              <td><strong>${user.favorites_count}</strong></td>
-              <td><strong>${user.report_count}</strong></td>
+              <td><strong>${renderAdminAwareCount(user, user.favorites_count)}</strong></td>
+              <td><strong>${renderAdminAwareCount(user, user.report_count)}</strong></td>
               <td>${escapeHtml(formatDate(user.last_activity))}</td>
               <td>${escapeHtml(formatDate(user.last_profile_update) || user.last_profile_update_mapped || '-')}</td>
               <td>
@@ -1030,12 +979,13 @@
             <div class="detail-card"><p class="detail-label">ID</p><p class="detail-value"><span class="detail-id mono">${escapeHtml(user.id)}</span></p></div>
             <div class="detail-card"><p class="detail-label">Email</p><p class="detail-value">${escapeHtml(user.email)}</p></div>
             <div class="detail-card"><p class="detail-label">Rôle</p><p class="detail-value">${renderPill(user.role)}</p></div>
-            <div class="detail-card"><p class="detail-label">Favoris</p><p class="detail-value">${user.favorites_count}</p></div>
-            <div class="detail-card"><p class="detail-label">Signalements</p><p class="detail-value">${user.report_count}</p></div>
+            ${user.role === 'admin' ? '' : `<div class="detail-card"><p class="detail-label">Favoris</p><p class="detail-value">${user.favorites_count}</p></div>`}
+            ${user.role === 'admin' ? '' : `<div class="detail-card"><p class="detail-label">Signalements</p><p class="detail-value">${user.report_count}</p></div>`}
             <div class="detail-card"><p class="detail-label">Dernière activité</p><p class="detail-value">${escapeHtml(formatDate(user.last_activity))}</p></div>
             <div class="detail-card"><p class="detail-label">Dernière maj profil</p><p class="detail-value">${escapeHtml(formatDate(user.last_profile_update) || user.last_profile_update_mapped || user.last_profile_update_raw || '-')}</p></div>
           </div>
 
+          ${user.role === 'admin' ? '' : `
           <div class="detail-section">
             <h3>Favoris</h3>
             <div class="detail-list">${favoritesHtml}</div>
@@ -1045,6 +995,7 @@
             <h3>Signalements issus de l'historique</h3>
             <div class="detail-list">${reportsHtml}</div>
           </div>
+          `}
         `;
 
         detailOverlay.hidden = false;
